@@ -1,8 +1,12 @@
 # Changelog
 
+### 9.26
+
+- Improve the "Redirect After Submit" feature, to also support when the form is in the same window (not only iframe).
+
 ### 9.25
 
-- Form Builder: Copy the Translations upon Create New Versio\
+- Form Builder: Copy the Translations upon Create New Version\
   Issue: [\#139](https://github.com/novacode-nl/odoo-formio/issues/139)\
   PR: [\#190](https://github.com/novacode-nl/odoo-formio/pull/192)
 
