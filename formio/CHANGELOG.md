@@ -1,5 +1,15 @@
 # Changelog
 
+### 10.3
+
+- For clarity (between code and Components API), renamed field added in 10.1:\
+  from `submission_url_add_query_string` to `submission_url_add_query_params_from`.
+
+### 10.2
+
+Refactor (and deprecate) the `/data` (fetching) endpoints to form root-level endpoints by new query string `api=get_data`.\
+Unfortunately this is required to allow the query string feature added in 10.1 to use with the data endpoint as well.
+
 ### 10.1
 
 Fundamentals to implement prepopulation* of component values for new (portal, public) forms.\
