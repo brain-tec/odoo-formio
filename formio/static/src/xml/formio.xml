@@ -67,7 +67,6 @@
                                 iFrameResize(
                                     {
                                         heightCalculationMethod: 'grow',
-                                        resizeFrom: 'child',
                                         bodyMargin: &quot;<t t-esc="form.iframe_resizer_body_margin"/>&quot;
                                     },
                                     '.formio_form_embed'

@@ -20,7 +20,6 @@ See LICENSE file for full licensing details. -->
                 iFrameResize(
                     {
                         heightCalculationMethod: 'grow',
-                        resizeFrom: 'child',
                         bodyMargin: &quot;<t t-esc="bodyMarginResize"/>&quot;
                     },
                     '.formio_form_embed'
