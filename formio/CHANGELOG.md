@@ -1,5 +1,87 @@
 # Changelog
 
+## 11.4
+
+- Ensure users with (group) "Administration Settings" are assigned to the "Forms Administrator" group.
+
+## 11.3
+
+- Improve Form (iFrame) resizing, especially for wizard Forms.\
+  Ensure iFrame height shall be recomputed in wizard Forms upon next/prev page.\
+- Revert the `heightCalculationMethod` from `lowestElement` to `grow` again.\
+  The `lowestElement` added too much space at the bottom (stil no clue why that happens).
+
+## 11.2
+
+Improve Form (iFrame) resizing, especially for wizard Forms.\
+Change the `heightCalculationMethod` from `grow` to `lowestElement`.\
+This resizes upon every (component) change by obtaining the lowest bottom element.
+
+## 11.1
+
+Solve Form height resizing issues, by applying the iFrame Resizer `bodyMargin` option.\
+Eg. ensure the rendering of select component at the bottom of a Form won't break anymore.\
+Issue: [\#20](https://github.com/novacode-nl/odoo-formio/issues/20)
+
+- Update iFrame Resizer (JS) library to version 4.3.2 (Dec 2021).
+- Add configurable `iframe_resizer_body_margin` field in Form Builder, with a (sensible) default value.
+- Change Form templates (backend, portal) to apply the configurable iFrame Resizer `bodyMargin`.
+- Add callable template `formio.form_iframe` (with options: `src`, `bodyMargin`, `form`), which applies the iFrame Resizer (with fallback on `form` its Form Builder).
+
+### 11.0
+
+- Add Form (JS) `apiUrl` property (backend, portal, public).
+- Implement Form (JS) `change` event, which posts to `/api/onChange` endpoint (determined by `apiUrl`).
+
+### 10.7
+
+Implement missing `api=getData` (fetching) endpoints in backend, portal, public.
+
+### 10.6
+
+Add default Form Builder formio.js Options data.
+
+This contains an `editForm` configuration for the `select` component.\
+More info about the `overrideEditForm` property: https://github.com/formio/formio.js/issues/2280
+
+However the `dataSrc` property currently (December 2022) doesn't seem to work, also mentoined in: https://github.com/formio/formio.js/issues/2489
+
+### 10.5
+
+Rename `/data` (fetching) endpoints query param from `api=get_data` to `api=getData`.
+
+### 10.4
+
+- Moved transalations button after form builder.
+
+### 10.3
+
+- For clarity (between code and Components API), renamed field added in 10.1:\
+  from `submission_url_add_query_string` to `submission_url_add_query_params_from`.
+
+### 10.2
+
+Refactor (and deprecate) the `/data` (fetching) endpoints to form root-level endpoints by new query string `api=get_data`.\
+Unfortunately this is required to allow the query string feature added in 10.1 to use with the data endpoint as well.
+
+### 10.1
+
+Fundamentals to implement prepopulation* of component values for new (portal, public) forms.\
+Prepopulation* by means of the Components (server) API.
+- Form Builder configuration and frontend/JS: add possible URL query string from window, to submission URL.
+- New (portal) endpoint: `/formio/portal/form/new/<string:builder_uuid>/submission`\
+  Can be used to prepopulate a (new) form.
+
+### 10.0
+
+- Portal form: render new (not yet stored) or a direct create (old style)
+- Refactor `_generate_odoo_domain`.
+
+### 9.28
+
+- Extend the form `/data` endpoints to support advanced domain filter.
+- Add the basic `_generate_odoo_domain` function in `formio.form` model, used in form `/data` endpoint.
+
 ### 9.27
 
 - Don't copy the Form Builder Locked field.
