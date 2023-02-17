@@ -1,5 +1,18 @@
 # Changelog
 
+## 11.6
+
+Enable loading the config (eg options) of Forms using the backend `_etl_odoo_config` method:
+- Add form builder method `_etl_odoo_config`.
+- Extend controllers `/config` (http) endpoints with updating the config by `_etl_odoo_config`.
+- Change the (JavaScript) `loadForm` method, to obtain and add possible URL query string/params from the window or parent window.
+
+## 11.5
+
+Provide an informational reference (link) between Form Builder and Server Actions:
+- Form Builder (form view): new tab "Actions API" where server actions can be linked.
+- Add char field "Forms Code" in server action (form view).
+
 ## 11.4
 
 - Ensure users with (group) "Administration Settings" are assigned to the "Forms Administrator" group.
