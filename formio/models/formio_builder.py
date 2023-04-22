@@ -51,6 +51,10 @@ class Builder(models.Model):
     formio_version_is_dummy = fields.Boolean(related='formio_version_id.is_dummy')
     formio_css_assets = fields.One2many(related='formio_version_id.css_assets', string='formio.js CSS')
     formio_js_assets = fields.One2many(related='formio_version_id.js_assets', string='formio.js Javascript')
+    extra_asset_ids = fields.Many2many(
+        comodel_name='formio.extra.asset',
+        string='Extra Assets'
+    )
     formio_js_options_id = fields.Many2one('formio.builder.js.options', string='formio.js Javascript Options template', store=False)
     formio_js_options = fields.Text(
         default=lambda self: self._default_formio_js_options(),
@@ -189,7 +193,7 @@ class Builder(models.Model):
     @api.constrains('name')
     def constaint_check_name(self):
         for rec in self:
-            if re.search(r"[^a-zA-Z0-9_-]", self.name) is not None:
+            if re.search(r"[^a-zA-Z0-9_-]", rec.name) is not None:
                 raise ValidationError(_('Name is invalid. Use ASCII letters, digits, "-" or "_".'))
 
     @api.constrains("name", "state")
@@ -441,6 +445,10 @@ class Builder(models.Model):
             options['language'] = language
             
         return options
+
+    def _get_form_js_locales(self):
+        locales = {lang.formio_ietf_code: lang.formio_short_code for lang in self.languages}
+        return locales
 
     def _get_js_params(self):
         """ Odoo JS (Owl component) misc. params """
