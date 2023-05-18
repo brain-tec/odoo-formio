@@ -3,13 +3,13 @@
 
 {
     'name': 'Forms | Website (Block etc)',
-    'summary': 'Form Block, other website integration',
+    'summary': "'Drag & drop' Form Block, other website integration",
     'version': '2.0',
     'license': 'LGPL-3',
     'author': 'Nova Code',
     'website': 'https://www.novacode.nl',
     'live_test_url': 'https://demo15.novacode.nl',
-    'category': 'Extra Tools',
+    'category': 'Forms/Forms',
     'depends': [
         'formio',
         'website_editor_unsanitize_html_field',

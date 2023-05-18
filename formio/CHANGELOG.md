@@ -1,5 +1,64 @@
 # Changelog
 
+## 12.12
+
+Fix the component data URL check in the Form JS (rendering) code.
+
+## 12.11
+
+Improve loading "Extra Assets" (js, css), by targetting `before` or `after` the core assets.
+
+## 12.10
+
+Form Builder: Disallow create and edit for field "formio.js version".
+
+## 12.9
+
+Form Builder Lock/Unlock buttons with primary color.
+
+## 12.8
+Cleanup/fix migrations (apparently picked from 16.0)
+
+## 12.7
+
+Improve Form Builder "Actions API" tab (layout and info).
+
+## 12.6
+
+Improvements for administration of "Extra Assets" (js, css) with link/relation to attachments.\
+Affected models: `formio.extra.asset`, `ir.attachment`.
+
+## 12.5
+
+Implement "Forms Ref" field on several models regarding assets and attachments:\
+`formio.version.asset`, `formio.extra.asset`, `ir.attachment`\
+This facilitates purposes like export/import tools.
+
+## 12.4
+
+Improve form builder wizard save as draft: previous page, page clicked.
+
+## 12.3
+
+Fix `formio.builder` typo in `_constaint_check_name`.
+
+## 12.2
+
+Fix and improve email templates:
+- Migrate Jinja to QWeb syntax.
+- Replace `email_to` by `partner_to`.
+
+## 12.1
+
+Add unique constraint on `formio.builder.translation` (fields: `builder_id`, `lang_id`, `source`).
+
+## 12.0
+
+This release brings datetime component localization and translations:
+- Add `formio.extra.asset` (model, views) to store extra JS and CSS assets, eg `flatpickr` (JS library) and its localization files.
+- Implement locales administration and passing to the (JS) frontend.
+- Set default and update the datetime (flatpickr) locale by language chooser in a form.
+
 ## 11.11
 
 Fix typo menu (sequence).

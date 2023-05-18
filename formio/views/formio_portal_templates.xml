@@ -15,7 +15,7 @@ See LICENSE file for full licensing details. -->
         </xpath>
     </template>
 
-    <template id="portal_my_home" name="Portal My Home: formio forms" inherit_id="portal.portal_my_home" priority="40">
+    <template id="portal_my_home" name="Portal My Home: formio forms" customize_show="True" inherit_id="portal.portal_my_home" priority="20">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-call="portal.portal_docs_entry">
                 <t t-set="title">Forms</t>
@@ -146,10 +146,30 @@ See LICENSE file for full licensing details. -->
         <html>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+                <t t-foreach="extra_assets.filtered(lambda x: x.target == 'prepend')" t-as="asset">
+                    <t t-if="asset.type == 'css'">
+                        <link rel="stylesheet" type="text/css" t-att-href="asset.url"/>
+                    </t>
+                    <t t-if="asset.type == 'js'">
+                        <script type="text/javascript" t-att-src="asset.url"></script>
+                    </t>
+                </t>
+
                 <script type="text/javascript" src="/formio/static/lib/iframe-resizer/iframeResizer.contentWindow.min.js"></script>
                 <script type="text/javascript" src="/web/static/lib/jquery/jquery.js"></script>
                 <script type="text/javascript" src="/web/static/lib/owl/owl.js"></script>
                 <script type="text/javascript" src="/formio/static/src/js/odoo.jsonrpc.js"/>
+
+                <t t-foreach="extra_assets.filtered(lambda x: x.target == 'append')" t-as="asset">
+                    <t t-if="asset.type == 'css'">
+                        <link rel="stylesheet" type="text/css" t-att-href="asset.url"/>
+                    </t>
+                    <t t-if="asset.type == 'js'">
+                        <script type="text/javascript" t-att-src="asset.url"></script>
+                    </t>
+                </t>
+
                 <script type="module" src="/formio/static/src/js/form/formio_form.js"/>
                 <script type="module" src="/formio/static/src/js/form/portal_new_app.js"/>
                 <t t-foreach="formio_css_assets" t-as="css">

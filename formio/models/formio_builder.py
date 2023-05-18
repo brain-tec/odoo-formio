@@ -51,6 +51,11 @@ class Builder(models.Model):
     formio_version_is_dummy = fields.Boolean(related='formio_version_id.is_dummy')
     formio_css_assets = fields.One2many(related='formio_version_id.css_assets', string='formio.js CSS')
     formio_js_assets = fields.One2many(related='formio_version_id.js_assets', string='formio.js Javascript')
+    extra_asset_ids = fields.Many2many(
+        comodel_name='formio.extra.asset',
+        string='Extra Assets',
+        domain=[('attachment_id.res_model', '=', 'formio.extra.asset')]
+    )
     formio_js_options_id = fields.Many2one('formio.builder.js.options', string='formio.js Javascript Options template', store=False)
     formio_js_options = fields.Text(
         default=lambda self: self._default_formio_js_options(),
@@ -129,6 +134,7 @@ class Builder(models.Model):
     )
     wizard = fields.Boolean("Wizard", tracking=True)
     wizard_on_next_page_save_draft = fields.Boolean("Wizard on Next Page Save Draft", tracking=True)
+    wizard_on_change_page_save_draft = fields.Boolean("Wizard on Change Page Save Draft", tracking=True)
     submission_url_add_query_params_from = fields.Selection(
         string="Add Query Params to Submission URL from",
         selection=[
@@ -189,7 +195,7 @@ class Builder(models.Model):
     @api.constrains('name')
     def constaint_check_name(self):
         for rec in self:
-            if re.search(r"[^a-zA-Z0-9_-]", self.name) is not None:
+            if re.search(r"[^a-zA-Z0-9_-]", rec.name) is not None:
                 raise ValidationError(_('Name is invalid. Use ASCII letters, digits, "-" or "_".'))
 
     @api.constrains("name", "state")
@@ -442,12 +448,16 @@ class Builder(models.Model):
             
         return options
 
+    def _get_form_js_locales(self):
+        locales = {lang.formio_ietf_code: lang.formio_short_code for lang in self.languages}
+        return locales
+
     def _get_js_params(self):
         """ Odoo JS (Owl component) misc. params """
         params = {
             'portal_submit_done_url': self.portal_submit_done_url,
             'readOnly': self.is_locked,
-            'wizard_on_next_page_save_draft': self.wizard and self.wizard_on_next_page_save_draft,
+            'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
             'submission_url_add_query_params_from': self.submission_url_add_query_params_from
         }
         return params
@@ -498,16 +508,16 @@ class Builder(models.Model):
         """ Odoo JS (Owl component) misc. params """
         params = {
             'portal_submit_done_url': self.portal_submit_done_url,
-            'wizard_on_next_page_save_draft': self.wizard and self.wizard_on_next_page_save_draft,
+            'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
             'submission_url_add_query_params_from': self.submission_url_add_query_params_from
         }
         return params
 
     def _get_public_form_js_params(self):
-        """ Form: Odoo JS (Owl component) misc. params """
+        """ Odoo JS (Owl component) misc. params """
         params = {
             'public_submit_done_url': self.public_submit_done_url,
-            'wizard_on_next_page_save_draft': self.wizard and self.wizard_on_next_page_save_draft,
+            'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
             'submission_url_add_query_params_from': self.submission_url_add_query_params_from
         }
         return params
@@ -565,3 +575,6 @@ class Builder(models.Model):
 
     def _generate_odoo_domain(self, domain=[], params={}):
         return domain
+
+    def _has_extra_asset(self, extra_asset_record):
+        return self.extra_asset_ids.filtered(lambda x: x.id == extra_asset_record.id)

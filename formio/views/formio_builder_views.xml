@@ -77,11 +77,13 @@ See LICENSE file for full licensing details. -->
                     <button
                         name="action_lock" type="object" string="Lock"
                         attrs="{'invisible':['|', ('is_locked','=',True), '|', ('id','=',False), ('state','!=','CURRENT')]}"
-                        confirm="Are you sure? No further modifications are possible in the Form Builder and configuration."/>
+                        confirm="Are you sure? No further modifications are possible in the Form Builder and configuration."
+                        class="btn-primary"/>
                     <button
                         name="action_unlock" type="object" string="Unlock"
                         attrs="{'invisible':['|', ('is_locked','=',False), '|', ('id','=',False), ('state','!=','CURRENT')]}"
-                        confirm="Are you sure? Modifying the Form Builder could cause existing forms to be invalid."/>
+                        confirm="Are you sure? Modifying the Form Builder could cause existing forms to be invalid."
+                        class="btn-primary"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -110,7 +112,9 @@ See LICENSE file for full licensing details. -->
                         <page string="General" name="settings">
                             <group name="settings">
                                 <group name="formiojs_settings" string="formio.js">
-                                    <field name="formio_version_id" attrs="{'readonly': [('is_locked', '=', True)]}"/>
+                                    <field name="formio_version_id"
+                                           attrs="{'readonly': [('is_locked', '=', True)]}"
+                                           options="{'no_create_edit': True, 'no_quick_create': True}"/>
                                     <field name="formio_version_is_dummy" invisible="1"/>
                                     <div colspan="2" attrs="{'invisible': [('formio_version_is_dummy', '=', False)]}">
                                         <strong class="text-danger">
@@ -130,7 +134,7 @@ See LICENSE file for full licensing details. -->
                                 <group name="wizard_settings" string="Wizard">
                                     <field name="wizard" string="Wizard" groups="formio.group_formio_admin"
                                            attrs="{'readonly': [('is_locked', '=', True)]}"/>
-                                    <field name="wizard_on_next_page_save_draft" string="Save Draft on Next Page" groups="formio.group_formio_admin"
+                                    <field name="wizard_on_change_page_save_draft" string="Save Draft on Change Page" groups="formio.group_formio_admin"
                                            attrs="{'readonly': [('is_locked', '=', True)]}"/>
                                     <div class="text-muted" colspan="2">
                                         <i class="fa fa-info-circle" title="info"/> Multi-page form, with previous/next page buttons
@@ -212,6 +216,17 @@ See LICENSE file for full licensing details. -->
                                     <field name="value"/>
                                 </tree>
                             </field>
+                            <group string="Languages &amp; Locales" name="languages_locales">
+                                <field name="languages" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="name"/>
+                                        <field name="code" optional="show"/>
+                                        <field name="formio_ietf_code" optional="hide"/>
+                                        <field name="formio_short_code" optional="show"/>
+                                        <field name="active"/>
+                                    </tree>
+                                </field>
+                            </group>
                             <div class="text-muted">
                                 <i class="fa fa-info-circle" title="info"/> Translations of the <strong>formio.js version</strong> can be done via the General tab (click field: formio.js version)<br/>
                                 <i class="fa fa-info-circle" title="info"/> The button "Translations" has the same as in this list.
@@ -263,21 +278,39 @@ See LICENSE file for full licensing details. -->
                             </group>
                         </page>
                         <page string="Actions API" name="actions_api" groups="formio.group_formio_admin">
-                            <group string="Server Actions" name="server_actions" colspan="2">
-                                <div class="mb-2 text-muted" colspan="2">
-                                    <i class="fa fa-info-circle" title="info"/> Server actions which process the form data / submission<br/>
-                                    <i class="fa fa-info-circle" title="info"/> This is currently here for implementation overview purposes
-                                </div>
-                                <field name="server_action_ids" nolabel="1" attrs="{'readonly': [('is_locked', '=', True)]}">
-                                    <tree>
-                                        <field name="name"/>
-                                        <field name="model_id"/>
-                                        <field name="formio_ref"/>
-                                        <field name="state"/>
-                                        <field name="sequence" optional="hide"/>
-                                    </tree>
-                                </field>
+                            <group>
+                                <group string="Server Actions" name="server_actions" colspan="2">
+                                    <div class="mb-2 text-muted" colspan="2">
+                                        <i class="fa fa-info-circle" title="info"/> Server actions which process the form data / submission<br/>
+                                        <i class="fa fa-info-circle" title="info"/> This is used by the <a href="https://apps.odoo.com/apps/modules/16.0/formio_deploy/" target="_blank"><i class="fa fa-link"/> Deploy Tool (formio_deploy) module</a><br/>
+                                    </div>
+                                    <field name="server_action_ids"
+                                           nolabel="1"
+                                           colspan="2"
+                                           attrs="{'readonly': [('is_locked', '=', True)]}">
+                                        <tree>
+                                            <field name="name"/>
+                                            <field name="model_id"/>
+                                            <field name="formio_ref"/>
+                                            <field name="state"/>
+                                            <field name="sequence" optional="hide"/>
+                                        </tree>
+                                    </field>
+                                </group>
                             </group>
+                        </page>
+                        <page string="Extra Assets" name="extra_assets" groups="formio.group_formio_admin">
+                            <field name="extra_asset_ids">
+                                <tree>
+                                    <field name="type" readonly="1"/>
+                                    <field name="target" readonly="1" optional="hide"/>
+                                    <field name="attachment_id" readonly="1"/>
+                                    <field name="attachment_type" string="Attachment Type" optional="show"/>
+                                    <field name="url" string="URL" optional="show"/>
+                                    <field name="attachment_public" string="Public" optional="show"/>
+                                    <field name="attachment_formio_ref" optional="show"/>
+                                </tree>
+                            </field>
                         </page>
                         <page string="JS Options" name="javascript_options" groups="formio.group_formio_admin">
                             <div style="background-color: #e9ecef; padding: 0 10px;">
