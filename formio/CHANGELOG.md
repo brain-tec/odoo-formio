@@ -1,5 +1,23 @@
 # Changelog
 
+## 13.1
+
+Improvements for Version Translations (model: `formio.version.translation`):
+- Compute and store origin (base translation, user added).
+- Compute and show whether a copied (origin) base translation has been updated.
+- Add sequence field. So translations can be ordered to ease admnistration and the translation override implementation.
+
+Fix `name_get` method (models: `formio.translation`, `formio.version.translation`)
+
+## 13.0
+
+Major improvements for translations:
+- Specific Version Translations instead of linking (Many2many) to the available Base Translations.
+- Translations (overrides) of formio.js source properties in the form builder.
+
+Add `noupdate=1` for the xmlid `formio.version_dummy` data (record).
+This prevents recreation when the dummy version has been archived (is inactive).
+
 ## 12.12
 
 Fix the component data URL check in the Form JS (rendering) code.
