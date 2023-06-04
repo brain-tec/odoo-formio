@@ -1,5 +1,18 @@
 # Changelog
 
+## 13.5
+
+Update iframe-resizer v4.3.6 (JS library).
+
+## 13.4
+
+Add form/builder heightCalculationMethod 'taggedElement' targets in portal and public templates.
+
+## 13.3
+
+Change form 'heightCalculationMethod' from 'grow' to 'taggedElement'.\
+This solves issues for components with dynamic height, eg the collapsible Edit Grid (type `editgrid`).
+
 ## 13.2
 
 Fix formio.js version (action/button) _Download and install_ error:\
