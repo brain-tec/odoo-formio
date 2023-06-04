@@ -1,5 +1,18 @@
 # Changelog
 
+## 11.16
+
+Update iframe-resizer v4.3.6 (JS library).
+
+## 11.15
+
+Add form/builder heightCalculationMethod 'taggedElement' targets in portal and public templates.
+
+## 11.14
+
+Change form 'heightCalculationMethod' from 'grow' to 'taggedElement'.\
+This solves issues for components with dynamic height, eg the collapsible Edit Grid (type `editgrid`).
+
 ## 11.13
 
 Fix the component data URL check in the Form JS (rendering) code.
