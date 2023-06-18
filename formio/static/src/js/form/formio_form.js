@@ -64,6 +64,26 @@ export class OdooFormioForm extends Component {
         }
     }
 
+    wizardStateChange (form, submission) {
+        this.resetParentIFrame();
+        // readOnly check also applies in server endpoint
+        const readOnly = 'readOnly' in this.options && this.options['readOnly'] == true;
+        if (this.params['wizard_on_change_page_save_draft'] && !readOnly) {
+            form.beforeSubmit();
+            const data = {'data': form.data, 'saveDraft': true};
+            if (this.formUuid) {
+                data['form_uuid'] = this.formUuid;
+            }
+            $.jsonRpc.request(this.submitUrl, 'call', data).then(function(submission) {
+                if (typeof(submission) != 'undefined') {
+                    // Set properties to instruct the next calls to save (draft) the current form.
+                    this.formUuid = submission.form_uuid;
+                    this.submitUrl = this.wizardSubmitUrl + this.formUuid + '/submit';
+                }
+            });
+        }
+    }
+
     loadForm() {
         const self = this;
         let configUrl = self.configUrl;
@@ -165,9 +185,21 @@ export class OdooFormioForm extends Component {
             }
         };
         Formio.createForm(document.getElementById('formio_form'), self.schema, self.options).then(function(form) {
-            window.setLanguage = function(lang) {
+            let buttons = document.querySelectorAll('.formio_languages button');
+            buttons.forEach(function(btn) {
+                if (self.language === btn.lang) {
+                    btn.classList.add('language_button_active');
+                };
+            });
+
+            window.setLanguage = function(lang, button) {
                 self.language = lang;
                 form.language = lang;
+                var buttons = document.querySelectorAll('.formio_languages button');
+                buttons.forEach(function(btn) {
+                    btn.classList.remove('language_button_active');
+                });
+                button.classList.add('language_button_active');
                 // component with URL filter: add language
                 FormioUtils.eachComponent(form.components, (component) => {
                     let compObj = component.component;
