@@ -1,5 +1,12 @@
 # Changelog
 
+## 12.2
+
+### Improvement
+
+Render a new portal form by the generic QWeb form template.\
+This ensures to apply any extra form builder config/settings.
+
 ## 12.1
 
 Improve app/module installation, by downloading and installing a default formio.js library version after install.\
@@ -7,7 +14,7 @@ Also log a warning in case an error (eg ConnectionError) occurs.
 
 ## 12.0
 
-1. Refactored the Form its Form Builder (field) domain/filter.
+### 1. Refactored the Form its Form Builder (field) domain/filter.
 
 This solves the deprecation warning, regarding a domain that may not be returned by an onchange method.
 
@@ -27,7 +34,7 @@ For the (Nova Code) Forms modules those are:
 - formio_purchase
 - formio_sale
 
-2. Add new feature which allows Form Builders in "Draft" or "Obsolete" state to be choosen in a new Form in the backend.
+### 2. Add new feature which allows Form Builders in "Draft" or "Obsolete" state to be choosen in a new Form in the backend.
 
 The 2 setting fields are available in the Form Builder:
 - Use Draft in Backend
