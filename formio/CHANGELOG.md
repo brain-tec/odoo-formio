@@ -1,13 +1,20 @@
 # Changelog
 
+## 15.2
+
+### Improvement
+
+Render a new portal form by the generic QWeb form template.\
+This ensures to apply any extra form builder config/settings.
+
+## 15.1
+
+Backwards formio.js compatibility fix:\
+Apply `patchCDN` if there's an instantiated `Formio.cdn` object.
+
 ## 15.0
 
 Make formio.js CDN for hot-loaded dependencies configurable.
-
-### WARNING / UPDATE REQUIREMENT !
-
-**Update all Form Builders (field) 'formio.js version' >= v4.14.11**\
-If not updated, all forms and builders will crash.
 
 ### Description
 
@@ -46,7 +53,7 @@ Also log a warning in case an error (eg ConnectionError) occurs.
 
 ## 14.0
 
-1. Refactored the Form its Form Builder (field) domain/filter.
+### 1. Refactored the Form its Form Builder (field) domain/filter.
 
 This solves the deprecation warning, regarding a domain that may not be returned by an onchange method.
 
@@ -66,7 +73,7 @@ For the (Nova Code) Forms modules those are:
 - formio_purchase
 - formio_sale
 
-2. Add new feature which allows Form Builders in "Draft" or "Obsolete" state to be choosen in a new Form in the backend.
+### 2. Add new feature which allows Form Builders in "Draft" or "Obsolete" state to be choosen in a new Form in the backend.
 
 The 2 setting fields are available in the Form Builder:
 - Use Draft in Backend
