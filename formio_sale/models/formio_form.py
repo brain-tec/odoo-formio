@@ -1,15 +1,15 @@
 # Copyright Nova Code (http://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
-from odoo import api, fields, models, _
-from odoo.addons.formio.models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
-from odoo.addons.formio.utils import get_field_selection_label
+from odoo import fields, models
 
 
 class Form(models.Model):
     _inherit = 'formio.form'
 
-    sale_order_id = fields.Many2one('sale.order', readonly=True, string='Sale Order')
+    sale_order_id = fields.Many2one(
+        "sale.order", string="Sale Order", readonly=True, ondelete="cascade"
+    )
 
     def _prepare_create_vals(self, vals):
         vals = super(Form, self)._prepare_create_vals(vals)
@@ -31,20 +31,15 @@ class Form(models.Model):
             id=res_id,
             model='sale.order',
             action=action.id)
-        res_model_name = builder.res_model_id.name
 
         vals['res_act_window_url'] = url
         vals['res_name'] = sale_order.name
         return vals
 
-    @api.onchange('builder_id')
-    def _onchange_builder_domain(self):
-        res = super(Form, self)._onchange_builder_domain()
+    def _get_builder_id_domain(self):
+        self.ensure_one()
+        domain = super()._get_builder_id_domain()
         if self._context.get('active_model') == 'sale.order':
             res_model_id = self.env.ref('sale.model_sale_order').id
-            domain = [
-                ('state', '=', BUILDER_STATE_CURRENT),
-                ('res_model_id', '=', res_model_id),
-            ]
-            res['domain'] = {'builder_id': domain}
-        return res
+            domain.append(('res_model_id', '=', res_model_id))
+        return domain

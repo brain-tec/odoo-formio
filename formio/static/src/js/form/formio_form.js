@@ -23,17 +23,20 @@ export class OdooFormioForm extends Component {
         this.locales = {};
         this.params = {}; // extra params from Odoo backend
 
-        this.baseUrl = window.location.protocol + '//' + window.location.host;
-        this.urlParams = new URLSearchParams(window.location.search);
-
         // by initForm
         this.builderUuid = null;
         this.formUuid = null;
+
+        // urls
+        this.baseUrl = window.location.protocol + '//' + window.location.host;
         this.configUrl = null;
         this.submissionUrl = null;
         this.submitUrl = null;
         this.wizardSubmitUrl = null;
         this.apiUrl = null;
+        this.apiValidationUrl = null;
+        this.urlParams = new URLSearchParams(window.location.search);
+
     }
 
     willStart() {
@@ -64,6 +67,26 @@ export class OdooFormioForm extends Component {
         }
     }
 
+    wizardStateChange (form, submission) {
+        this.resetParentIFrame();
+        // readOnly check also applies in server endpoint
+        const readOnly = 'readOnly' in this.options && this.options['readOnly'] == true;
+        if (this.params['wizard_on_change_page_save_draft'] && !readOnly) {
+            form.beforeSubmit();
+            const data = {'data': form.data, 'saveDraft': true};
+            if (this.formUuid) {
+                data['form_uuid'] = this.formUuid;
+            }
+            $.jsonRpc.request(this.submitUrl, 'call', data).then(function(submission) {
+                if (typeof(submission) != 'undefined') {
+                    // Set properties to instruct the next calls to save (draft) the current form.
+                    this.formUuid = submission.form_uuid;
+                    this.submitUrl = this.wizardSubmitUrl + this.formUuid + '/submit';
+                }
+            });
+        }
+    }
+
     loadForm() {
         const self = this;
         let configUrl = self.configUrl;
@@ -83,7 +106,7 @@ export class OdooFormioForm extends Component {
                 self.options = result.options;
                 self.language = self.options.language;
                 self.locales = result.locales;
-                self.defaultLocaleShort = self._localeShort(self.language);
+                self.defaultLocaleShort = self.localeShort(self.language);
                 self.params = result.params;
                 self.createForm();
             }
@@ -143,36 +166,65 @@ export class OdooFormioForm extends Component {
         }
     }
 
-    _hasComponentDataURL(component) {
-        return component
-            && component.hasOwnProperty('data')
-            && component.data.hasOwnProperty('url')
-            && !$.isEmptyObject(component.data.url);
-    }
-
     createForm() {
         const self = this;
         // this does some flatpickr (datetime) locale all over the place.
         if ('language' in self.options && window.flatpickr != undefined) {
             (window).flatpickr.localize((window).flatpickr.l10ns[self.defaultLocaleShort]);
         }
+
+        if (Formio.hasOwnProperty('cdn')) {
+	    this.patchCDN();
+	    Formio.cdn.setBaseUrl(self.params['cdn_base_url']);
+        }
+
         Formio.setBaseUrl(window.location.href);
         self['options']['hooks'] = {
             attachComponent: (element, instance) => {
                 if (instance.component.type == 'datetime') {
-                    self._localizeComponent(instance.component, self.language);
+                    self.localizeComponent(instance.component, self.language);
+                }
+            },
+            customValidation: (submission, next) => {
+                if (self.params.hasOwnProperty('hook_api_validation')
+                    && !!self.params['hook_api_validation'])
+                {
+                    const data = {'data': submission.data, 'lang_ietf_code': self.language};
+                    $.jsonRpc.request(self.apiValidationUrl, 'call', data).then(function(errors) {
+                        if (!$.isEmptyObject(errors)) {
+                            next(errors);
+                        }
+                        else {
+                            next();
+                        }
+                    });
+                }
+                else {
+                    next();
                 }
             },
             ...self['options']['hooks'],
         };
         Formio.createForm(document.getElementById('formio_form'), self.schema, self.options).then(function(form) {
-            window.setLanguage = function(lang) {
+            let buttons = document.querySelectorAll('.formio_languages button');
+            buttons.forEach(function(btn) {
+                if (self.language === btn.lang) {
+                    btn.classList.add('language_button_active');
+                };
+            });
+
+            window.setLanguage = function(lang, button) {
                 self.language = lang;
                 form.language = lang;
+                var buttons = document.querySelectorAll('.formio_languages button');
+                buttons.forEach(function(btn) {
+                    btn.classList.remove('language_button_active');
+                });
+                button.classList.add('language_button_active');
                 // component with URL filter: add language
                 FormioUtils.eachComponent(form.components, (component) => {
                     let compObj = component.component;
-                    if (self._hasComponentDataURL(compObj)) {
+                    if (self.hasComponentDataURL(compObj)) {
                         let filterParams = new URLSearchParams(compObj.filter);
                         filterParams.set('language', form.language);
                         compObj.filter = filterParams.toString();
@@ -180,11 +232,11 @@ export class OdooFormioForm extends Component {
                 });
                 // flatpickr (datetime) localization
                 if (window.flatpickr != undefined) {
-                    const localeShort = self._localeShort(lang);
+                    const localeShort = self.localeShort(lang);
                     (window).flatpickr.localize((window).flatpickr.l10ns[localeShort]);
                     form.everyComponent((component) => {
                         if (component.type == 'datetime') {
-                            self._localizeComponent(component.component, form.language);
+                            self.localizeComponent(component.component, form.language);
                             component.redraw();
                         }
                     });
@@ -195,7 +247,7 @@ export class OdooFormioForm extends Component {
             // This also accounts nested components eg inside datagrid, editgrid.
             FormioUtils.eachComponent(form.components, (component) => {
                 let compObj = component.component;
-                if (self._hasComponentDataURL(compObj)) {
+                if (self.hasComponentDataURL(compObj)) {
                     compObj.data.url = self.getDataUrl(compObj);
                     let filterParams = new URLSearchParams(compObj.filter);
                     filterParams.set('language', form.language);
@@ -223,13 +275,13 @@ export class OdooFormioForm extends Component {
                 if (!$.isEmptyObject(self.locales)) {
                     let reloadComponents = [];
                     FormioUtils.eachComponent(component.component.components, (componentObj) => {
-                        let localizedComponent = self._localizeComponent(componentObj, self.language);
+                        let localizedComponent = self.localizeComponent(componentObj, self.language);
                         if (localizedComponent) {
                             reloadComponents.push(componentObj);
                         }
                     }, true);
                     if (reloadComponents.length > 0) {
-                        const localeShort = self._localeShort(self.language);
+                        const localeShort = self.localeShort(self.language);
                         form.everyComponent((component) => {
                             for (let i=0; i < reloadComponents.length; i++) {
                                 let reloadComponent = reloadComponents[i];
@@ -345,13 +397,125 @@ export class OdooFormioForm extends Component {
         });
     }
 
-    _localizeComponent(component, language) {
+    patchCDN() {
+	// CDN class is not exported, so patch it here because
+	// ckeditor's URLs are somewhat nonstandard.
+        //
+        // The patch implements a fallback for formio.js version
+        // <= 4.14.12, where CDN.buildUrl is not implemented, to
+        // patch CDN.updateUrls.
+        //
+	// When using an external CDN, we must also avoid loading the customized
+	// version of flatpickr, instead relying on the default version.
+        if (Formio.cdn.buildUrl !== undefined && typeof(Formio.cdn.buildUrl === 'function')) {
+            const oldBuildUrl = Formio.cdn.buildUrl.bind(Formio.cdn);
+            Formio.cdn.buildUrl = function(cdnUrl, lib, version) {
+                if (lib == 'ckeditor') {
+                    if (version == '19.0.0') {
+                        // Somehow 19.0.0 is missing?!
+                        version = '19.0.1';
+                    }
+                    return `${cdnUrl}/${lib}5/${version}`;
+                } else if (lib == 'flatpickr-formio') {
+                    return oldBuildUrl(cdnUrl, 'flatpickr', this.libs['flatpickr']);
+                } else {
+                    return oldBuildUrl(cdnUrl, lib, version);
+                }
+            };
+        } else {
+            const oldUpdateUrls = Formio.cdn.updateUrls.bind(Formio.cdn);
+            Formio.cdn.updateUrls = function() {
+                for (const lib in this.libs) {
+                    let version = this.libs[lib];
+                    if (version === '') {
+                        this[lib] = `${this.baseUrl}/${lib}`;
+                    }
+                    else if (lib == 'ckeditor') {
+                        if (version == '19.0.0') {
+                            // Somehow 19.0.0 is missing?!
+                            version = '19.0.1';
+                        }
+                        this[lib] = `${this.baseUrl}/${lib}5/${version}`;
+                    } else if (lib == 'flatpickr-formio') {
+                        const flatpickr_version = this.libs['flatpickr'];
+                        this[lib] = `${this.baseUrl}/flatpickr/${flatpickr_version}`;
+                    } else {
+                        this[lib] = `${this.baseUrl}/${lib}/${this.libs[lib]}`;
+                    }
+                }
+            };
+        }
+    }
+
+    patchRequireLibary() {
+        // Formio requireLibrary method is not exported, so patch it
+        // here because the standard CDNs use a different flatpickr
+        // naming and src URLs.
+        const oldRequireLibrary= Formio.requireLibrary.bind(Formio);
+        Formio.requireLibrary = function(name, property, src, polling) {
+            const src_is_string = typeof(src) === 'string';
+            if (src_is_string
+                && src.includes('flatpickr')
+                && src.includes('l10n'))
+            {
+                ////////////////////////////////////////////////////
+                // HACK - SPECIAL CASE for flatpickr l10n (locales).
+                ////////////////////////////////////////////////////
+                // EXAMPLE of rewriting:
+                // name: flatpickr-nl-NL
+                // nameLang: nl-NL
+                // nameShort: nl
+                let nameLang = name.replaceAll('flatpickr-', '');
+                // nameShort
+                let nameShort = nameLang;
+                if (nameLang !== 'default') {
+                    nameShort = nameLang.substring(0, 2);
+                }
+                if (nameShort == 'en') {
+                    nameShort = 'default';
+                }
+                // property
+                property = property.replaceAll('flatpickr-', '');
+                if (property !== 'default') {
+                    property = property.substring(0, 2);
+                }
+                if (property == 'en') {
+                    property = 'default';
+                }
+                // src
+                src = src.replaceAll('flatpickr-', '').replaceAll('.js', '.min.js');
+                src = src.replaceAll(nameLang, nameShort);
+                return oldRequireLibrary(nameShort, property, src, polling);
+            }
+            else if (src_is_string
+                     && name != 'flatpickr-css'
+                     && name.includes('flatpickr-'))
+            {
+                name = name.replaceAll('flatpickr-', '');
+                property = property.replaceAll('flatpickr-', '');
+                src = src.replaceAll('flatpickr-', '').replaceAll('.js', '.min.js');
+                return oldRequireLibrary(name, property, src, polling);
+            }
+            else {
+                return oldRequireLibrary(name, property, src, polling);
+            }
+        };
+    }
+
+    hasComponentDataURL(component) {
+        return component
+            && component.hasOwnProperty('data')
+            && component.data.hasOwnProperty('url')
+            && !$.isEmptyObject(component.data.url);
+    }
+
+    localizeComponent(component, language) {
         /** IMPORTANT !
             localization of datetime component (flatpickr widget)
             works since formio.js version 5.0.0-rc.4
         */
         if (component.type == 'datetime') {
-            const localeShort = this._localeShort(language);
+            const localeShort = this.localeShort(language);
             component.widget.language = localeShort;
             component.widget.locale = localeShort;
             return true;
@@ -362,7 +526,7 @@ export class OdooFormioForm extends Component {
         }
     }
 
-    _localeShort(language) {
+    localeShort(language) {
         if (this.locales.hasOwnProperty(language)) {
             return this.locales[language];
         }

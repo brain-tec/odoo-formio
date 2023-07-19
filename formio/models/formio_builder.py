@@ -92,6 +92,17 @@ class Builder(models.Model):
     version_comment = fields.Text("Version Comment")
     user_id = fields.Many2one('res.users', string='Assigned user', tracking=True)  # TODO old field, remove?
     forms = fields.One2many('formio.form', 'builder_id', string='Forms')
+    forms_count = fields.Integer(string='Forms Count', compute='_compute_forms_count')
+    backend_use_draft = fields.Boolean(
+        string='Use Draft in Backend',
+        default=False,
+        help='Allows to use this Form Builder in state DRAFT, when adding/choosing a new Form in the backend.'
+    )
+    backend_use_obsolete = fields.Boolean(
+        string='Use Obsolete in Backend',
+        default=False,
+        help='Allows to use this Form Builder in state OBSOLETE, when adding/choosing a new Form in the backend.'
+    )
     portal = fields.Boolean("Portal", tracking=True, help="Form is accessible by assigned portal user")
     portal_url = fields.Char(string='Portal URL', compute='_compute_portal_urls')
     portal_direct_create = fields.Boolean("Portal Direct Create", tracking=True, help="Direct create Form by link")
@@ -133,6 +144,7 @@ class Builder(models.Model):
         """
     )
     wizard = fields.Boolean("Wizard", tracking=True)
+    # DEPRECATED: wizard_on_next_page_save_draft (in favor of: wizard_on_change_page_save_draft)
     wizard_on_next_page_save_draft = fields.Boolean("Wizard on Next Page Save Draft", tracking=True)
     wizard_on_change_page_save_draft = fields.Boolean("Wizard on Change Page Save Draft", tracking=True)
     submission_url_add_query_params_from = fields.Selection(
@@ -163,6 +175,10 @@ class Builder(models.Model):
         string='Server Actions',
         domain="[('model_name', '=', 'formio.form')]"
     )
+    hook_api_validation = fields.Boolean(
+        string='Hook Validation API', default=False, copy=True)
+    show_api_alert = fields.Boolean(compute='_compute_show_api_alert')
+    api_alert = fields.Text(compute='_compute_api_alert')
 
     def _states_selection(self):
         return STATES
@@ -345,6 +361,21 @@ class Builder(models.Model):
                 action=action.id)
             r.act_window_url = url
 
+    def _compute_show_api_alert(self):
+        self.ensure_one()
+        self.show_api_alert = len(self.server_action_ids) > 0
+
+    def _compute_api_alert(self):
+        self.ensure_one()
+        self.api_alert = ', '.join(self._api_alert_items())
+
+    def _api_alert_items(self):
+        self.ensure_one()
+        if len(self.server_action_ids) > 0:
+            return [_("Server Actions")]
+        else:
+            return []
+
     def action_view_formio(self):
         view_id = self.env.ref('formio.view_formio_builder_formio').id
         return {
@@ -357,6 +388,23 @@ class Builder(models.Model):
             "res_id": self.id,
             "context": {}
         }
+
+    def action_view_forms(self):
+        form_view = self.env.ref('formio.view_formio_form_tree')
+        return {
+            'name': 'Forms',
+            'type': 'ir.actions.act_window',
+            'res_model': 'formio.form',
+            'view_mode': 'tree,form',
+            'views': [(form_view.id, 'tree'), (False, 'form')],
+            'target': 'current',
+            'domain': [('builder_id', '=', self.id)],
+            'context': {}
+        }
+
+    def _compute_forms_count(self):
+        for r in self:
+            r.forms_count = len(r.forms)
 
     def action_draft(self):
         vals = {'state': STATE_DRAFT}
@@ -442,10 +490,12 @@ class Builder(models.Model):
         else:
             language = Lang._formio_ietf_code(self._context['lang'])
 
-        # only set language if exist in i18n translations
         if options['i18n'].get(language):
             options['language'] = language
-            
+        elif self.language_en_enable:
+            lang_en = self.env.ref('base.lang_en')
+            options['language'] = Lang._formio_ietf_code(lang_en.code)
+
         return options
 
     def _get_form_js_locales(self):
@@ -458,7 +508,8 @@ class Builder(models.Model):
             'portal_submit_done_url': self.portal_submit_done_url,
             'readOnly': self.is_locked,
             'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
-            'submission_url_add_query_params_from': self.submission_url_add_query_params_from
+            'submission_url_add_query_params_from': self.submission_url_add_query_params_from,
+            'cdn_base_url': self._cdn_base_url()
         }
         return params
 
@@ -509,7 +560,8 @@ class Builder(models.Model):
         params = {
             'portal_submit_done_url': self.portal_submit_done_url,
             'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
-            'submission_url_add_query_params_from': self.submission_url_add_query_params_from
+            'submission_url_add_query_params_from': self.submission_url_add_query_params_from,
+            'cdn_base_url': self._cdn_base_url()
         }
         return params
 
@@ -518,7 +570,8 @@ class Builder(models.Model):
         params = {
             'public_submit_done_url': self.public_submit_done_url,
             'wizard_on_change_page_save_draft': self.wizard and self.wizard_on_change_page_save_draft,
-            'submission_url_add_query_params_from': self.submission_url_add_query_params_from
+            'submission_url_add_query_params_from': self.submission_url_add_query_params_from,
+            'cdn_base_url': self._cdn_base_url()
         }
         return params
 
@@ -547,25 +600,45 @@ class Builder(models.Model):
         builder = self.sudo().search(domain, limit=1)
         return builder or False
 
+    def _cdn_base_url(self):
+        Param = self.env['ir.config_parameter'].sudo()
+        cdn_base_url = Param.get_param('formio.cdn_base_url')
+        return cdn_base_url
+
     def i18n_translations(self):
         i18n = {}
         # formio.js translations
-        for trans in self.formio_version_id.translations:
+        for trans in self.formio_version_id.translation_ids:
             code = trans.lang_id.formio_ietf_code
             if code not in i18n:
-                i18n[code] = {trans.property: trans.value}
+                i18n[code] = {trans.source_property: trans.value}
             else:
-                i18n[code][trans.property] = trans.value
+                i18n[code][trans.source_property] = trans.value
         # Form Builder translations (labels etc).
         # These could override the former formio.js translations, but
         # that's how the Javascript API works.
         for trans in self.translations:
             code = trans.lang_id.formio_ietf_code
             if code not in i18n:
-                i18n[code] = {trans.source: trans.value}
+                if trans.source_property:
+                    i18n[code] = {trans.source_property: trans.value}
+                else:
+                    i18n[code] = {trans.source: trans.value}
             else:
-                i18n[code][trans.source] = trans.value
+                if trans.source_property:
+                    i18n[code][trans.source_property] = trans.value
+                else:
+                    i18n[code][trans.source] = trans.value
         return i18n
+
+    def _formio_translate(self, source, lang_code=None):
+        self.ensure_one()
+        if not lang_code:
+            lang_code = self.env.lang
+        trans = self.translations.filtered(
+            lambda t: t.lang_id.code == lang_code and t.source == source
+        )
+        return trans[0].value if trans else source
 
     def _etl_odoo_config(self, params):
         return {}

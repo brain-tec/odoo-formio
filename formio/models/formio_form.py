@@ -15,7 +15,11 @@ from odoo.exceptions import AccessError, UserError
 
 from ..utils import get_field_selection_label
 
-from .formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
+from .formio_builder import (
+    STATE_DRAFT as BUILDER_STATE_DRAFT,
+    STATE_CURRENT as BUILDER_STATE_CURRENT,
+    STATE_OBSOLETE as BUILDER_STATE_OBSOLETE,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -40,8 +44,15 @@ class Form(models.Model):
     }
 
     builder_id = fields.Many2one(
-        'formio.builder', string='Form Builder', required=True,
-        ondelete='restrict', domain=[('state', '=', BUILDER_STATE_CURRENT)])
+        'formio.builder',
+        string='Form Builder',
+        required=True,
+        ondelete='restrict',
+    )
+    builder_id_domain = fields.Binary(
+        compute='_compute_builder_id_domain',
+        store=False
+    )
     name = fields.Char(related='builder_id.name', readonly=True)
     uuid = fields.Char(
         default=lambda self: self._default_uuid(), required=True, readonly=True, copy=False,
@@ -168,13 +179,12 @@ class Form(models.Model):
         # resource model, id
         vals['res_model_id'] = builder.res_model_id.id
 
-        if not vals.get('res_id'):
+        if not vals.get('res_id') and self._context.get('active_model') != 'formio.builder':
             vals['res_id'] = self._context.get('active_id')
+            vals['initial_res_id'] = vals['res_id']
 
-        vals['initial_res_id'] = vals['res_id']
-
-        if not vals.get('res_name'):
-            vals['res_name'] = builder.res_model_id.name
+            if not vals.get('res_name'):
+                vals['res_name'] = builder.res_model_id.name
 
         # timezone (add if not provided already)
         if not vals.get('submission_timezone'):
@@ -232,6 +242,22 @@ class Form(models.Model):
     def _get_builder_from_id(self, builder_id):
         return self.env['formio.builder'].browse(builder_id)
 
+    @api.depends('uuid')
+    def _compute_builder_id_domain(self):
+        for rec in self:
+            rec.builder_id_domain = self._get_builder_id_domain()
+
+    def _get_builder_id_domain(self):
+        self.ensure_one()
+        domain = [
+            '|',
+            ('state', '=', BUILDER_STATE_CURRENT),
+            '|',
+            '&', ('state', '=', BUILDER_STATE_DRAFT), ('backend_use_draft', '=', True),
+            '&', ('state', '=', BUILDER_STATE_OBSOLETE), ('backend_use_obsolete', '=', True)
+        ]
+        return domain
+
     @api.depends('state')
     def _compute_kanban_group_state(self):
         for r in self:
@@ -262,8 +288,9 @@ class Form(models.Model):
                 form.allow_force_update_state = True
             elif self.env.user.has_group('formio.group_formio_admin'):
                 form.allow_force_update_state = True
-            elif form.builder_id.allow_force_update_state_group_ids and \
-                 (user_groups & form.builder_id.allow_force_update_state_group_ids):
+            elif form.builder_id.allow_force_update_state_group_ids and (
+                user_groups & form.builder_id.allow_force_update_state_group_ids
+            ):
                 form.allow_force_update_state = True
             else:
                 form.allow_force_update_state = False
@@ -278,12 +305,14 @@ class Form(models.Model):
 
             # public
             form.public_access = form._public_access()
-            
+
     def _public_access(self):
         if self.public_share and self.public_access_date_from:
             now = fields.Datetime.now()
-            expire_on = self.public_access_date_from + self._interval_types[self.public_access_interval_type](self.public_access_interval_number)
-            
+            interval_delta = self._interval_types[self.public_access_interval_type](
+                self.public_access_interval_number
+            )
+            expire_on = self.public_access_date_from + interval_delta
             if self.public_access_interval_number == 0:
                 return False
             elif self.public_access_date_from > now:
@@ -413,16 +442,18 @@ class Form(models.Model):
     def _default_uuid(self):
         return str(uuid.uuid4())
 
-    @api.onchange('builder_id')
-    def _onchange_builder_domain(self):
-        domain = [
-            ('state', '=', BUILDER_STATE_CURRENT),
-            ('res_model_id', '=', False),
-        ]
-        res = {
-            'domain': {'builder_id': domain}
-        }
-        return res
+    # @api.onchange('builder_id')
+    # def _onchange_builder_domain(self):
+    #     domain = [
+    #         '|', '&',
+    #         ('state', '=', BUILDER_STATE_CURRENT),
+    #         ('res_model_id', '=', False),
+    #         '&', ('state', '=', BUILDER_STATE_DRAFT), ('test_draft', '=', True)
+    #     ]
+    #     res = {
+    #         'domain': {'builder_id': domain}
+    #     }
+    #     return res
 
     @api.onchange('builder_id')
     def _onchange_builder(self):
@@ -547,10 +578,13 @@ class Form(models.Model):
 
     def _get_js_params(self):
         """ Odoo JS (Owl component) misc. params """
+        Param = self.env['ir.config_parameter'].sudo()
+        cdn_base_url = Param.get_param('formio.cdn_base_url')
         params = {
             'portal_submit_done_url': self.portal_submit_done_url,
             'public_submit_done_url': self.public_submit_done_url,
-            'wizard_on_change_page_save_draft': self.builder_id.wizard and self.builder_id.wizard_on_change_page_save_draft
+            'wizard_on_change_page_save_draft': self.builder_id.wizard and self.builder_id.wizard_on_change_page_save_draft,
+            'cdn_base_url': cdn_base_url
         }
         return params
 

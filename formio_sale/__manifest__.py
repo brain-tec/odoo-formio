@@ -3,8 +3,8 @@
 
 {
     'name': 'Forms | Sales',
-    'summary': 'Forms integration with Sale Orders/Quotes',
-    'version': '1.0',
+    'summary': 'Forms integration with Sale Orders/Quotations',
+    'version': '2.0',
     'license': 'LGPL-3',
     'author': 'Nova Code',
     'website': 'https://www.novacode.nl',

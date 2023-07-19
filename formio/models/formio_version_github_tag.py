@@ -7,9 +7,8 @@ import os
 import requests
 import shutil
 import tarfile
-import sys
 
-from odoo import api, fields, models, modules
+from odoo import api, fields, models
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +23,7 @@ class VersionGitHubTag(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'formio.js Version GitHub Tag'
     #_order = 'create_date desc, id asc'
+    order = 'write_date desc, id desc'
 
     # IMPORTANT NOTES
     # ===============
@@ -36,7 +36,7 @@ class VersionGitHubTag(models.Model):
     # - Sorted by tag name (descending)
 
     name = fields.Char(required=True)
-    version_name = fields.Char('_compute_fields')
+    version_name = fields.Char(compute='_compute_fields')
     formio_version_id = fields.Many2one('formio.version', string='formio.js version')
     archive_url = fields.Char(compute='_compute_fields', string="Archive URL")
     changelog_url = fields.Char(compute='_compute_fields', string="Changelog URL")
@@ -67,7 +67,7 @@ class VersionGitHubTag(models.Model):
                 r.install_date = fields.Datetime.now()
             else:
                 r.install_date = False
-        
+
     @api.model
     def check_and_register_available_versions(self):
         vals_list = self.env['formio.version.github.checker.wizard'].check_new_versions()
@@ -127,6 +127,7 @@ class VersionGitHubTag(models.Model):
                 'name': self.version_name,
             }
             version = version_model.create(vals)
+            version.action_add_base_translations()
 
             ################
             # default assets

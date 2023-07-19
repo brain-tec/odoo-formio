@@ -19,9 +19,9 @@ _logger = logging.getLogger(__name__)
 
 class FormioPublicController(http.Controller):
 
-    ###############
-    # Form - public
-    ###############
+    ####################
+    # Form - public uuid
+    ####################
 
     @http.route('/formio/public/form/<string:uuid>', type='http', auth='public', website=True)
     def public_form_root(self, uuid, **kwargs):
@@ -34,9 +34,13 @@ class FormioPublicController(http.Controller):
         if args.get('api') == 'getData':
             return self._api_get_data(form.builder_id)
         else:
+            languages = form.builder_id.languages
+            lang_en = request.env.ref('base.lang_en')
+            if lang_en.active and form.builder_id.language_en_enable and 'en_US' not in languages.mapped('code'):
+                languages |= request.env.ref('base.lang_en')
             values = {
-                'languages': form.builder_id.languages,
                 'form': form,
+                'form_languages': languages,
                 'formio_css_assets': form.builder_id.formio_css_assets,
                 'formio_js_assets': form.builder_id.formio_js_assets,
             }
@@ -273,6 +277,23 @@ class FormioPublicController(http.Controller):
                 model_obj = request.env[model].with_context(lang=lang)
             else:
                 model_obj = request.env[model]
+            # Bypass access rights restrictions - by configuration !
+            # Ensure the model_obj search_read can query by direct ir.rule domain.
+            # This also sets sudo() on the model_obj, if the ir.rule is present.
+            model_rule_id = args.get('model_rule_id')
+            model_rule_xmlid = args.get('model_rule_xmlid')
+            if model_rule_id and int(model_rule_id):
+                rule = request.env['ir.rule'].sudo().browse(int(model_rule_id))
+            elif model_rule_xmlid:
+                rule = request.env.ref(model_rule_xmlid).sudo()
+            else:
+                rule = False
+            if rule and rule.active and rule.model_id.model == model:
+                add_domain = rule._formio_compute_direct_domain(model, 'read')
+                if add_domain:
+                    domain += add_domain
+                    model_obj = model_obj.sudo()
+            # limit, order and query
             limit = (args.get('limit') and int(args.get('limit'))) or None
             order = args.get('sort') or model_obj._order + ', id'
             records = model_obj.search_read(
@@ -287,10 +308,14 @@ class FormioPublicController(http.Controller):
         options = form._get_js_options()
 
         Lang = request.env['res.lang']
-        language = Lang._formio_ietf_code(request.env.user.lang)
-        if language:
-            options['language'] = language
-            options['i18n'] = form.i18n_translations()
+        # language
+        if request.context.get('lang'):
+            options['language'] = Lang._formio_ietf_code(request.context.get('lang'))
+        elif request.env.user.lang:
+            options['language'] = Lang._formio_ietf_code(request.env.user.lang)
+        else:
+            options['language'] = request.env.ref('base.lang_en').formio_ietf_code
+        options['i18n'] = form.i18n_translations()
         return options
 
     def _get_public_create_form_js_options(self, builder):
