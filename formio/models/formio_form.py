@@ -147,7 +147,7 @@ class Form(models.Model):
         if 'submission_data' in vals:
             # submission_data can only be provided per record !
             self.ensure_one()
-            if self.state in states_not_allowed:
+            if self.state in states_not_allowed and not self.allow_force_update_state:
                 msg = 'It is not allowed to update form with UUID {uuid} in state {state}'
                 _logger.info(msg.format(uuid=self.uuid, state=self.state))
                 raise AccessError(_(msg).format(uuid=self.uuid, state=self.state))
@@ -360,6 +360,10 @@ class Form(models.Model):
 
     def after_submit(self):
         """ Function is called everytime a form is submitted. """
+        pass
+
+    def after_save_draft(self):
+        """ Function is called everytime a form is save as draft. """
         pass
 
     def action_view_formio(self):
