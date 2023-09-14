@@ -1,5 +1,51 @@
 # Changelog
 
+## 15.0.6.11
+
+Fix portal form `AttributeError: 'tuple' object has no attribute 'formio_ietf_code'`.\
+Add (again) `language` template variable in the render values of endpoint `/formio/portal/form/<string:uuid>`\
+Issue: [\#257](https://github.com/novacode-nl/odoo-formio/issues/257)
+
+## 15.0.6.10
+
+Rename label of `formio.form` field `submission_data`, from `Data` to `Submission Data`.
+
+## 15.0.6.9
+
+Add `formio.form` (Form) `after_save_draft` method and execute it in the `/submit` endpoints (backend, portal, public).
+
+## 15.0.6.8
+
+Fix:
+Still one Form loading regression (bug) in template `formio_form_public_embed`.\
+Due to incomplete implementation of the new (loading) spinner implementation in v16.0.6.6.
+
+## 15.0.6.7
+
+Fix:
+Form loading on portal and public/website.\
+Due to incomplete implementation of the new (loading) spinner implementation in v16.0.6.6.
+
+Improvement:
+Put the form builder (loading) spinner in dedicated `<div/>` which hides when the form builder has been rendered.
+
+## 15.0.6.6
+
+Improvements:
+- Menu renaming: 'Forms' to 'Form Submissions'
+- Put the form (loading) spinner in dedicated `<div/>` which hides when the form has been rendered.
+
+## 15.0.16.5
+
+Improvements:
+- Menu renaming: 'Forms' to 'Form Submissions'
+- Put the form (loading) spinner in dedicated `<div/>` which hides when the form has been rendered.
+
+## 15.0.16.4
+
+Security fix / meaurement:\
+Deny update of `submission_data` (field) upon form update, if the form has state 'Completed' or 'Canceled'.
+
 ## 15.0.16.3
 
 Improvement for translations:

@@ -208,8 +208,7 @@ class FormioCustomerPortal(CustomerPortal):
 
         values = {
             'form': form,
-            # 'languages' already injected in rendering somehow
-            'form_languages': languages.sorted('name'),
+            'languages': languages,
             'formio_css_assets': form.builder_id.formio_css_assets,
             'formio_js_assets': form.builder_id.formio_js_assets,
             'extra_assets': form.builder_id.extra_asset_ids
@@ -332,6 +331,8 @@ class FormioCustomerPortal(CustomerPortal):
 
         if vals.get('state') == FORM_STATE_COMPLETE:
             res.after_submit()
+        elif vals.get('state') == FORM_STATE_DRAFT:
+            res.after_save_draft()
         request.session['formio_last_form_uuid'] = res.uuid
         return {'form_uuid': res.uuid}
 

@@ -89,7 +89,7 @@ class Form(models.Model):
         'mail.template', 'Invitation Mail',
         domain=[('model', '=', 'formio.form')],
         help="This e-mail template will be sent on user assignment. Leave empty to send nothing.")
-    submission_data = fields.Text('Data', default=False)
+    submission_data = fields.Text('Submission Data', default=False)
     submission_user_id = fields.Many2one(
         'res.users', string='Submission User', readonly=True,
         help='User who submitted the form.')
@@ -143,15 +143,21 @@ class Form(models.Model):
         return res
 
     def write(self, vals):
+        states_not_allowed = [STATE_CANCEL, STATE_COMPLETE]
+        if 'submission_data' in vals:
+            # submission_data can only be provided per record !
+            self.ensure_one()
+            if self.state in states_not_allowed and not self.allow_force_update_state:
+                msg = 'It is not allowed to update form with UUID {uuid} in state {state}'
+                _logger.info(msg.format(uuid=self.uuid, state=self.state))
+                raise AccessError(_(msg).format(uuid=self.uuid, state=self.state))
         res = super(Form, self).write(vals)
-
         # update timezone, if not provided and if changed by the partner.
         if not vals.get('submission_timezone'):
             if vals.get('partner_id') and vals.get('partner_id') != self.partner_id.id:
                 partner = self.env['res.partner'].browse(vals.get('partner_id'))
                 if partner.tz:
                     vals['submission_timezone'] = partner.tz
-
         self._after_write(vals)
         return res
 
@@ -354,6 +360,10 @@ class Form(models.Model):
 
     def after_submit(self):
         """ Function is called everytime a form is submitted. """
+        pass
+
+    def after_save_draft(self):
+        """ Function is called everytime a form is save as draft. """
         pass
 
     def action_view_formio(self):
