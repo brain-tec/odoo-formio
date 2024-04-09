@@ -4,6 +4,8 @@
 import logging
 import os
 
+from urllib.parse import urlparse
+
 from odoo import models
 from odoo.exceptions import AccessDenied
 from odoo.http import request
@@ -27,32 +29,39 @@ class IrHttp(models.AbstractModel):
         if auth_method == 'user' and request._context.get('uid'):
             return super(IrHttp, cls)._authenticate(endpoint)
         else:
-            # Security measurement for public POST/uploads, because
+            # Security measurement for public POST (uploads), because
             # CSRF is disabled (needed) for this endpoint.
-
+            #
             # The baseUrl param was set on the Formio (JavaScript)
             # object and send by the XMLHttpRequest to this
             # endpoint.
             base_url = request.httprequest.args.get('baseUrl')
             if not base_url:
                 raise AccessDenied()
-
-            if '/formio/public/form/create' in base_url:
-                uuid = os.path.basename(os.path.normpath(base_url))
+            url = urlparse(base_url)
+            if url.path.startswith('/formio/public/form/new'):
+                uuid = url.path.split('/')[-1]
                 domain = [('uuid', '=', uuid), ('public', '=', True)]
                 builder = request.env['formio.builder'].sudo().search(domain)
                 if builder:
-                    _logger.info('Allow public /formio/storage/filestore with baseUrl %s (become: auth=public)' % base_url)
-                    return 'public'
-            elif '/formio/public/form/' in base_url:
-                uuid = os.path.basename(os.path.normpath(base_url))
+                    return cls._allow_public_formio_storage_filestore(base_url)
+                else:
+                    return False
+            elif url.path.startswith('/formio/public/form'):
+                uuid = url.path.split('/')[-1]
                 domain = [('uuid', '=', uuid), ('public', '=', True)]
                 form = request.env['formio.form'].sudo().search(domain)
-                if form:
-                    _logger.info('Allow public /formio/storage/filestore with baseUrl %s (become: auth=public)' % base_url)
-                    return 'public'
-            # Applies if above doesn't
-            return False
+                if not form or not form.public_access:
+                    return cls._allow_public_formio_storage_filestore(base_url)
+                else:
+                    return False
+            else:
+                return False
+
+    @classmethod
+    def _allow_public_formio_storage_filestore(cls, base_url):
+        _logger.info('Allow public /formio/storage/filestore with baseUrl %s (become: auth=public)' % base_url)
+        return 'public'
 
     @classmethod
     def _authenticate(cls, endpoint):

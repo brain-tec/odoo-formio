@@ -60,6 +60,15 @@
 <section class="oe_container">
   <div class="oe_row oe_spaced">
     <h2 class="oe_slogan" style="color:#875A7B;">Releases</h2>
+    <h4 class="oe_mb16">1.2</h4>
+    <ul>
+      <li>
+        Fixed (multi) file upload retrieval for backend, portal and public forms (request context/env).<br/>
+        This applies to GET /formio/storage/filestore requests immediately after the upload, e.g. to preview images, that resulted in HTTP 403 Forbidden errors.<br/>
+        This required to fixing and improving the URL/route authentication checks.<br/>
+        Also done another security audit, so uploaded files cannot be retrieved without proper access/permission.
+      </li>
+    </ul>
     <h4 class="oe_mb16">1.1</h4>
     <ul>
       <li>
