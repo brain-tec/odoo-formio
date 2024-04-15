@@ -1,4 +1,4 @@
-# Odoo Forms app & modules
+# Nova Forms - Odoo Forms app & modules
 
 ### Odoo Apps Store
 
