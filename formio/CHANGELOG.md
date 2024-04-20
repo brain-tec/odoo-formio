@@ -1,5 +1,12 @@
 # Changelog
 
+## 16.0.13.0.0
+
+Technical/API change for the `formio.form` methods `_after_create` and `_after_write`:
+- Removed the `vals` argument because the respective caller methods `create` and `write` raise a Singleton Error.\
+  This simplifies the `create` and `write` methods.
+- Call the `_process_api_components` method per record iteration.
+
 ## 16.0.12.3.0
 
 Add descriptions with recommended modules in the `formio.builder.js.options` data.

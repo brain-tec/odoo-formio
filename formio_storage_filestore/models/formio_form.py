@@ -1,28 +1,23 @@
 # Copyright Nova Code (http://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
-from odoo import api, models
+from odoo import models
 
 
 class Form(models.Model):
     _inherit = 'formio.form'
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        res = self
-        for vals in vals_list:
-            rec = super(Form, self).create([vals])
-            if vals.get('submission_data'):
-                rec._process_storage_filestore_ir_attachments('create')
-            res |= rec
-        return res
-
-    def write(self, vals):
-        res = super(Form, self).write(vals)
+    def _after_create(self):
+        super()._after_create()
         for rec in self:
-            if vals.get('submission_data'):
+            if rec.submission_data:
+                rec._process_storage_filestore_ir_attachments('create')
+
+    def _after_write(self):
+        super()._after_write()
+        for rec in self:
+            if rec.submission_data:
                 rec._process_storage_filestore_ir_attachments('write')
-        return res
 
     def unlink(self):
         """

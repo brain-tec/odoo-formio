@@ -1,5 +1,12 @@
 # Changelog
 
+## 16.0.3.0.0
+
+Technical/API compatibility change for the `formio.form` methods `_after_create` and `_after_write`:
+- Removed the `vals` argument because the respective caller methods `create` and `write` raise a Singleton Error.\
+  This simplifies the `formio.form` base `create` and `write` methods.
+- Call the `_process_storage_filestore_ir_attachments` method per record iteration.
+
 ## 16.0.2.3.0
 
 Add description with recommended module in the `formio.builder.js.options` data.\
