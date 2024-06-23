@@ -4,8 +4,10 @@
 import json
 import logging
 
-from odoo import http, fields
+from odoo import http, fields, _
 from odoo.http import request
+
+from .main import FormioBaseController
 
 from ..models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
 from ..models.formio_form import (
@@ -22,7 +24,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioPublicController(http.Controller):
+class FormioPublicController(FormioBaseController, http.Controller):
 
     ####################
     # Form - public uuid
@@ -217,57 +219,63 @@ class FormioPublicController(http.Controller):
 
     @http.route('/formio/public/form/new/<string:builder_uuid>/submit', type='http', auth="public", methods=['POST'], csrf=False, website=True)
     def public_form_new_submit(self, builder_uuid, **kwargs):
+        res = {}
         self.validate_csrf()
+
         formio_builder = self._get_public_builder(builder_uuid)
         if not formio_builder:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            res['error'] = _('The form was not found')
+            return res
 
-        post = request.get_json_data()
-        Form = request.env['formio.form']
-        vals = {
-            'builder_id': formio_builder.id,
-            'title': formio_builder.title,
-            'public_create': True,
-            'public_share': True,
-            'submission_data': json.dumps(post['data']),
-            'submission_date': fields.Datetime.now(),
-            'submission_user_id': request.env.user.id
-        }
+        try:
+            post = request.get_json_data()
+            Form = request.env['formio.form']
+            vals = {
+                'builder_id': formio_builder.id,
+                'title': formio_builder.title,
+                'public_create': True,
+                'public_share': True,
+                'submission_data': json.dumps(post['data']),
+                'submission_date': fields.Datetime.now(),
+                'submission_user_id': request.env.user.id
+            }
 
-        save_draft = post.get('saveDraft') or (
-            post['data'].get('saveDraft') and not post['data'].get('submit')
-        )
+            save_draft = post.get('saveDraft') or (
+                post['data'].get('saveDraft') and not post['data'].get('submit')
+            )
+            if save_draft:
+                vals['state'] = FORM_STATE_DRAFT
+            else:
+                vals['state'] = FORM_STATE_COMPLETE
 
-        if save_draft:
-            vals['state'] = FORM_STATE_DRAFT
-        else:
-            vals['state'] = FORM_STATE_COMPLETE
+            context = {'tracking_disable': True}
 
-        context = {'tracking_disable': True}
+            if request.env.user._is_public():
+                Form = Form.with_company(request.env.user.sudo().company_id)
+                form = Form.with_context(**context).sudo().create(vals)
+            else:
+                form = Form.with_context(**context).create(vals)
 
-        if request.env.user._is_public():
-            Form = Form.with_company(request.env.user.sudo().company_id)
-            form = Form.with_context(**context).sudo().create(vals)
-        else:
-            form = Form.with_context(**context).create(vals)
+            # after hooks
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
 
-        # after hooks
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
+            request.session['formio_last_form_uuid'] = form.uuid
 
-        request.session['formio_last_form_uuid'] = form.uuid
+            # debug mode is checked/handled
+            log_form_submisssion(form)
 
-        # debug mode is checked/handled
-        log_form_submisssion(form)
-
-        request.session['formio_last_form_uuid'] = form.uuid
-        res = {
-            'form_uuid': form.uuid,
-            'submission_data': form.submission_data
-        }
+            request.session['formio_last_form_uuid'] = form.uuid
+            res = {
+                'form_uuid': form.uuid,
+                'submission_data': form.submission_data
+            }
+        except Exception as e:
+            request.env.cr.rollback()
+            error = self._exception_submit(e, post['data'], formio_builder.debug_mode)
+            res['error'] = error
         return request.make_json_response(res)
 
     #########

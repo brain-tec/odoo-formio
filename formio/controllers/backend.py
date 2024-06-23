@@ -4,8 +4,10 @@
 import json
 import logging
 
-from odoo import http, fields
+from odoo import http, fields, _
 from odoo.http import request
+
+from .main import FormioBaseController
 
 from ..models.formio_form import (
     STATE_DRAFT as FORM_STATE_DRAFT,
@@ -21,7 +23,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioController(http.Controller):
+class FormioController(FormioBaseController, http.Controller):
 
     ##############
     # Form Builder
@@ -146,47 +148,59 @@ class FormioController(http.Controller):
 
         # ETL Odoo data
         if form:
-            etl_odoo_data = form.sudo()._etl_odoo_data()
-            submission_data.update(etl_odoo_data)
+            try:
+                etl_odoo_data = form.sudo()._etl_odoo_data()
+                submission_data.update(etl_odoo_data)
+            except Exception as e:
+                error = self._exception_submission(e, submission_data, form.debug_mode)
+                # TODO add keys in submission_data
+                submission_data['error'] = error
 
         return request.make_json_response(submission_data)
 
     @http.route('/formio/form/<string:uuid>/submit', type='http', auth="user", methods=['POST'], csrf=False, website=True)
     def form_submit(self, uuid):
         """ POST with ID instead of uuid, to get the model object right away """
-        self.validate_csrf()
-        form = self._get_form(uuid, 'write')
-        if not form or form.state == FORM_STATE_COMPLETE:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
-        post = request.get_json_data()
-        vals = {
-            'submission_data': json.dumps(post['data']),
-            'submission_user_id': request.env.user.id,
-            'submission_date': fields.Datetime.now(),
-        }
-
-        if post.get('saveDraft') or (
-            post['data'].get('saveDraft') and not post['data'].get('submit')
-        ):
-            vals['state'] = FORM_STATE_DRAFT
-        else:
-            vals['state'] = FORM_STATE_COMPLETE
-
-        form.write(vals)
-
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
-
-        # debug mode is checked/handled
-        log_form_submisssion(form)
-
         res = {
-            'form_uuid': uuid,
-            'submission_data': form.submission_data
+            'form_uuid': uuid
         }
+        self.validate_csrf()
+
+        form = self._get_form(uuid, 'write')
+        if not form:
+            res['error'] = _('The form was not found.')
+            return res
+        if form.state == FORM_STATE_COMPLETE:
+            res['error'] = _('The form has already been submitted.')
+            return res
+
+        try:
+            post = request.get_json_data()
+            vals = {
+                'submission_data': json.dumps(post['data']),
+                'submission_user_id': request.env.user.id,
+                'submission_date': fields.Datetime.now(),
+            }
+
+            if post.get('saveDraft') or (
+                post['data'].get('saveDraft') and not post['data'].get('submit')
+            ):
+                vals['state'] = FORM_STATE_DRAFT
+            else:
+                vals['state'] = FORM_STATE_COMPLETE
+
+            form.write(vals)
+
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
+
+            log_form_submisssion(form)
+            res['submission_data'] = form.submission_data
+        except Exception as e:
+            error = self._exception_submit(e, post['data'], form.debug_mode)
+            res['error'] = error
         return request.make_json_response(res)
 
     #########

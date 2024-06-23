@@ -106,6 +106,12 @@ See LICENSE file for full licensing details. -->
                         </t>
                     </div>
                 </t>
+
+                <div id="formio_form_server_error" class="alert alert-danger d-none">
+                    <strong class="mb4">Error</strong>
+                    <pre class="p8"/>
+                </div>
+
                 <!-- form shall be mounted here -->
                 <div id="formio_form_app">
                     <div id="formio_form_loading_overlay"></div>

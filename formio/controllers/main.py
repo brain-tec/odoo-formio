@@ -2,6 +2,7 @@
 # See LICENSE file for full licensing details.
 
 import logging
+import traceback
 
 from io import BytesIO
 from os.path import dirname
@@ -11,13 +12,55 @@ try:
 except ImportError:
     from odoo.tools._vendor.send_file import send_file
 
-from odoo import http
+from odoo import http, _
 from odoo.http import request
+from odoo.tools.misc import html_escape
 
 _logger = logging.getLogger(__name__)
 
 
-class FormioMain(http.Controller):
+class FormioBaseController(http.Controller):
+
+    def _exception_submit(self, exception, submission_data, debug_mode=False):
+        _logger.error(exception)
+        if debug_mode and request.env.user.has_group('formio.group_formio_admin'):
+            se = http.serialize_exception(exception)
+            se['debug'] = traceback.format_exc()
+            error_lines = [
+                html_escape(se['debug']),
+                '',
+                html_escape(se['message'])
+            ]
+            error = '<br/>'.join(error_lines)
+            error = error.replace('\n', '<br/>')
+            error = error.replace('\\n', '<br/>')
+            error = error.replace('\\\n', '<br/>')
+            error = error.replace('\\\\n', '<br/>')
+        else:
+            # TODO configure message in form builder !
+            error = _('Sorry, something went wrong with processing the form. Please contact our support.')
+        # TODO message_post, create activity
+        return error
+
+    def _exception_submission(self, exception, submission_data, debug_mode=False):
+        _logger.error(exception)
+        if debug_mode and request.env.user.has_group('formio.group_formio_admin'):
+            se = http.serialize_exception(exception)
+            se['debug'] = traceback.format_exc()
+            error_lines = [
+                html_escape(se['debug']),
+                '',
+                html_escape(se['message'])
+            ]
+            error = '<br/>'.join(error_lines)
+            error = error.replace('\n', '<br/>')
+            error = error.replace('\\n', '<br/>')
+            error = error.replace('\\\n', '<br/>')
+            error = error.replace('\\\\n', '<br/>')
+        else:
+            error = _('Sorry, something went wrong with processing the form. Please contact our support.')
+        # TODO message_post, create actitivy
+        return error
 
     @http.route(['/web/content/<int:id>/fonts/<string:name>'], type='http', auth="public")
     def send_fonts_file(self, id, name, **kwargs):

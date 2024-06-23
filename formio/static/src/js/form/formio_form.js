@@ -509,8 +509,20 @@ export class OdooFormioForm extends Component {
 
             form.on('submit', function(submission) {
                 const data = {'data': submission.data};
-                self.postData(self.submitUrl, data).then(function() {
-                    form.emit('submitDone', submission);
+                self.postData(self.submitUrl, data).then(function(res) {
+                    if (res.hasOwnProperty('error')) {
+                        let error = $('#formio_form_server_error');
+                        let errorContent = $('#formio_form_server_error pre');
+                        errorContent.html(res['error']);
+                        error.show();
+                        error.removeClass('d-none');
+                        // scroll embed and parent
+                        window.scrollTo(0, 0);
+                        window.parent.postMessage({odooFormioMessage: 'formioScrollTop', params: {}});
+                    }
+                    else {
+                        form.emit('submitDone', submission);
+                    }
                     self.hideOverlay();
                 });
             });
@@ -556,7 +568,17 @@ export class OdooFormioForm extends Component {
                     }
                 }
                 self.getData(submissionUrl, {}).then(function(result) {
-                    if (!$.isEmptyObject(result)) {
+                    if (result.hasOwnProperty('error')) {
+                        let error = $('#formio_form_server_error');
+                        let errorContent = $('#formio_form_server_error pre');
+                        errorContent.html(result['error']);
+                        error.show();
+                        error.removeClass('d-none');
+                        // scroll embed and parent
+                        window.scrollTo(0, 0);
+                        window.parent.postMessage({odooFormioMessage: 'formioScrollTop', params: {}});
+                    }
+                    else if (!$.isEmptyObject(result)) {
                         form.submission = {'data': result};
                     }
                     self.hideOverlay();
