@@ -48,7 +48,7 @@ See LICENSE file for full licensing details. -->
                     <label for="display_name" class="oe_edit_only"/>
                     <h1><field name="display_name"/></h1>
                     <div class="mb16">
-                        <a class="btn btn-primary" href="https://www.novaforms.app/pricing" target="_blank"><i class="fa fa-globe"/> More licensing information</a>
+                        <a class="btn btn-primary" href="https://www.novaforms.app/pricing" target="_blank" role="button"><i class="fa fa-globe"/> More licensing information</a>
                     </div>
                     <group>
                         <group colspan="2">
