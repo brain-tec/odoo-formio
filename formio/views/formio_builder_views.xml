@@ -367,6 +367,7 @@ See LICENSE file for full licensing details. -->
                                             <field name="model_id"/>
                                             <field name="formio_ref"/>
                                             <field name="state"/>
+                                            <field name="formio_form_execute_after_action" string="Execute After State"/>
                                             <field name="sequence" optional="hide"/>
                                         </tree>
                                     </field>

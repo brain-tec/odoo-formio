@@ -19,6 +19,14 @@ class ServerAction(models.Model):
         string="Forms Ref",
         help="Identifies a server action with related form builder.",
     )
+    formio_form_execute_after_action = fields.Selection(
+        [
+            ('save_draft', 'Save Draft'),
+            ('submit', 'Submit'),
+            ('submit_save_draft', 'Submit and Save Draft')
+        ],
+        string='Forms Execute After'
+    )
 
     @api.onchange('model_id')
     def _onchange_formio_ref(self):

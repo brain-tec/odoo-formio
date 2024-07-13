@@ -1,11 +1,15 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 import json
 import logging
 
-from odoo import http, fields
+from markupsafe import Markup
+
+from odoo import http, fields, _
 from odoo.http import request
+
+from .main import FormioBaseController
 
 from ..models.formio_form import (
     STATE_DRAFT as FORM_STATE_DRAFT,
@@ -21,7 +25,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioController(http.Controller):
+class FormioController(FormioBaseController, http.Controller):
 
     ##############
     # Form Builder
@@ -140,32 +144,46 @@ class FormioController(http.Controller):
 
         # Submission data
         if form and form.submission_data:
-            submission_data = json.loads(form.submission_data)
+            submission_data = {'submission': json.loads(form.submission_data)}
         else:
-            submission_data = {}
+            submission_data = {'submission': {}}
 
         # ETL Odoo data
         if form:
-            etl_odoo_data = form.sudo()._etl_odoo_data()
-            submission_data.update(etl_odoo_data)
+            try:
+                etl_odoo_data = form.sudo()._etl_odoo_data()
+                submission_data['submission'].update(etl_odoo_data)
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e)
+                submission_data['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    submission_data['error_traceback'] = Markup(error_traceback_html)
 
         return request.make_json_response(submission_data)
 
     @http.route('/formio/form/<string:uuid>/submit', type='http', auth="user", methods=['POST'], csrf=False, website=True)
     def form_submit(self, uuid):
         """ POST with ID instead of uuid, to get the model object right away """
+        res = {
+            'form_uuid': uuid
+        }
         self.validate_csrf()
+
         form = self._get_form(uuid, 'write')
-        if not form or form.state == FORM_STATE_COMPLETE:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+        if not form:
+            res['error_message'] = _('The form was not found.')
+            return request.make_json_response(res)
+        if form.state == FORM_STATE_COMPLETE:
+            res['error_message'] = _('The form has already been submitted.')
+            res['options'] = {'readOnly': True}
+            return request.make_json_response(res)
+
         post = request.get_json_data()
         vals = {
             'submission_data': json.dumps(post['data']),
             'submission_user_id': request.env.user.id,
             'submission_date': fields.Datetime.now(),
         }
-
         if post.get('saveDraft') or (
             post['data'].get('saveDraft') and not post['data'].get('submit')
         ):
@@ -173,20 +191,20 @@ class FormioController(http.Controller):
         else:
             vals['state'] = FORM_STATE_COMPLETE
 
-        form.write(vals)
-
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
-
-        # debug mode is checked/handled
-        log_form_submisssion(form)
-
-        res = {
-            'form_uuid': uuid,
-            'submission_data': form.submission_data
-        }
+        try:
+            form.write(vals)
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
+            log_form_submisssion(form)
+            res['submission_data'] = form.submission_data
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = error_traceback_html
+            form.write({'state': 'ERROR'})
         return request.make_json_response(res)
 
     #########

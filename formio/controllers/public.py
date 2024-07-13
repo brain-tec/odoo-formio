@@ -4,8 +4,12 @@
 import json
 import logging
 
-from odoo import http, fields
+from markupsafe import Markup
+
+from odoo import http, fields, _
 from odoo.http import request
+
+from .main import FormioBaseController
 
 from ..models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
 from ..models.formio_form import (
@@ -22,7 +26,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioPublicController(http.Controller):
+class FormioPublicController(FormioBaseController, http.Controller):
 
     ####################
     # Form - public uuid
@@ -53,18 +57,30 @@ class FormioPublicController(http.Controller):
     def form_config(self, form_uuid, **kwargs):
         form = self._get_public_form(form_uuid, self._check_public_form())
         res = {'schema': {}, 'options': {}, 'params': {}}
-        args = request.httprequest.args
 
         if form and form.builder_id.schema:
-            res['schema'] = json.loads(form.builder_id.schema)
-            res['options'] = self._get_public_form_js_options(form)
-            res['locales'] = self._get_public_form_js_locales(form.builder_id)
-            res['params'] = self._get_public_form_js_params(form.builder_id)
+            args = request.httprequest.args
             res['csrf_token'] = request.csrf_token()
-            etl_odoo_config = form.builder_id.sudo()._etl_odoo_config(
-                formio_form=form, params=args.to_dict()
-            )
-            res['options'].update(etl_odoo_config.get('options', {}))
+            try:
+                res['schema'] = json.loads(form.builder_id.schema)
+                res['options'] = self._get_public_form_js_options(form)
+                res['locales'] = self._get_public_form_js_locales(form.builder_id)
+                res['params'] = self._get_public_form_js_params(form.builder_id)
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e)
+                res['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    res['error_traceback'] = Markup(error_traceback_html)
+            try:
+                etl_odoo_config = form.builder_id.sudo()._etl_odoo_config(
+                    formio_form=form, params=args.to_dict()
+                )
+                res['options'].update(etl_odoo_config.get('options', {}))
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e)
+                res['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    res['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(res)
 
     @http.route('/formio/public/form/<string:uuid>/submission', type='http', methods=['GET'], auth='public', csrf=False, website=True)
@@ -73,25 +89,34 @@ class FormioPublicController(http.Controller):
 
         # Submission data
         if form and form.submission_data:
-            submission_data = json.loads(form.submission_data)
+            submission_data = {'submission': json.loads(form.submission_data)}
         else:
-            submission_data = {}
+            _logger.info('formio.form with UUID %s not found' % uuid)
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
 
         # ETL Odoo data
         if form:
-            etl_odoo_data = form.sudo()._etl_odoo_data()
-            submission_data.update(etl_odoo_data)
-
+            try:
+                etl_odoo_data = form.sudo()._etl_odoo_data()
+                submission_data.update(etl_odoo_data)
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e, submission_data)
+                submission_data['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    submission_data['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(submission_data)
 
     @http.route('/formio/public/form/<string:uuid>/submit', type='http', auth="public", methods=['POST'], csrf=False, website=True)
     def public_form_submit(self, uuid, **kwargs):
         """ POST with ID instead of uuid, to get the model object right away """
         self.validate_csrf()
+        res = {}
         form = self._get_public_form(uuid, self._check_public_form())
         if not form:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            _logger.info('formio.form with UUID %s not found' % uuid)
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
         post = request.get_json_data()
         vals = {
             'submission_data': json.dumps(post['data']),
@@ -106,20 +131,24 @@ class FormioPublicController(http.Controller):
         else:
             vals['state'] = FORM_STATE_COMPLETE
 
-        form.write(vals)
-
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
-
-        # debug mode is checked/handled
-        log_form_submisssion(form)
-
-        res = {
+        try:
+            form.write(vals)
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
+            # debug mode is checked/handled
+            log_form_submisssion(form)
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = error_traceback_html
+            form.write({'state': 'ERROR'})
+        res.update({
             'form_uuid': uuid,
             'submission_data': form.submission_data
-        }
+        })
         return request.make_json_response(res)
 
     ###################
@@ -185,19 +214,31 @@ class FormioPublicController(http.Controller):
         res = {'schema': {}, 'options': {}}
 
         if not formio_builder or not formio_builder.public or formio_builder.state != BUILDER_STATE_CURRENT:
-            return res
+            _logger.info('formio.builder with UUID %s not found' % builder_uuid)
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
 
         if formio_builder.schema:
-            res['schema'] = json.loads(formio_builder.schema)
-            res['options'] = self._get_public_new_form_js_options(formio_builder)
-            res['locales'] = self._get_public_form_js_locales(formio_builder)
-            res['params'] = self._get_public_form_js_params(formio_builder)
             res['csrf_token'] = request.csrf_token()
-
+            try:
+                res['schema'] = json.loads(formio_builder.schema)
+                res['options'] = self._get_public_new_form_js_options(formio_builder)
+                res['locales'] = self._get_public_form_js_locales(formio_builder)
+                res['params'] = self._get_public_form_js_params(formio_builder)
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e)
+                res['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    res['error_traceback'] = Markup(error_traceback_html)
         args = request.httprequest.args
-        etl_odoo_config = formio_builder.sudo()._etl_odoo_config(params=args.to_dict())
-        res['options'].update(etl_odoo_config.get('options', {}))
-
+        try:
+            etl_odoo_config = formio_builder.sudo()._etl_odoo_config(params=args.to_dict())
+            res['options'].update(etl_odoo_config.get('options', {}))
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_load(e)
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(res)
 
     @http.route('/formio/public/form/new/<string:builder_uuid>/submission', type='http', auth='public', methods=['GET'], csrf=False, website=True)
@@ -206,22 +247,31 @@ class FormioPublicController(http.Controller):
 
         if not formio_builder or not formio_builder.public:
             _logger.info('formio.builder with UUID %s not found' % builder_uuid)
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
 
         args = request.httprequest.args
         submission_data = {}
-        etl_odoo_data = formio_builder.sudo()._etl_odoo_data(params=args.to_dict())
-        submission_data.update(etl_odoo_data)
+        try:
+            etl_odoo_data = formio_builder.sudo()._etl_odoo_data(params=args.to_dict())
+            submission_data.update(etl_odoo_data)
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_load(e, submission_data)
+            submission_data['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                submission_data['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(submission_data)
 
     @http.route('/formio/public/form/new/<string:builder_uuid>/submit', type='http', auth="public", methods=['POST'], csrf=False, website=True)
     def public_form_new_submit(self, builder_uuid, **kwargs):
+        res = {}
         self.validate_csrf()
+
         formio_builder = self._get_public_builder(builder_uuid)
         if not formio_builder:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            _logger.info('formio.builder with UUID %s not found' % builder_uuid)
+            res['error_message'] = _('The form was not found')
+            return request.make_json_response(res)
 
         post = request.get_json_data()
         Form = request.env['formio.form']
@@ -238,7 +288,6 @@ class FormioPublicController(http.Controller):
         save_draft = post.get('saveDraft') or (
             post['data'].get('saveDraft') and not post['data'].get('submit')
         )
-
         if save_draft:
             vals['state'] = FORM_STATE_DRAFT
         else:
@@ -246,28 +295,35 @@ class FormioPublicController(http.Controller):
 
         context = {'tracking_disable': True}
 
-        if request.env.user._is_public():
-            Form = Form.with_company(request.env.user.sudo().company_id)
-            form = Form.with_context(**context).sudo().create(vals)
-        else:
-            form = Form.with_context(**context).create(vals)
+        try:
+            if request.env.user._is_public():
+                Form = Form.with_company(request.env.user.sudo().company_id)
+                form = Form.with_context(**context).sudo().create(vals)
+            else:
+                form = Form.with_context(**context).create(vals)
 
-        # after hooks
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
+            # after hooks
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
 
-        request.session['formio_last_form_uuid'] = form.uuid
+            request.session['formio_last_form_uuid'] = form.uuid
 
-        # debug mode is checked/handled
-        log_form_submisssion(form)
+            # debug mode is checked/handled
+            log_form_submisssion(form)
 
-        request.session['formio_last_form_uuid'] = form.uuid
-        res = {
-            'form_uuid': form.uuid,
-            'submission_data': form.submission_data
-        }
+            request.session['formio_last_form_uuid'] = form.uuid
+            res = {
+                'form_uuid': form.uuid,
+                'submission_data': form.submission_data
+            }
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = error_traceback_html
+            form.write({'state': 'ERROR'})
         return request.make_json_response(res)
 
     #########

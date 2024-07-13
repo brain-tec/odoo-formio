@@ -74,6 +74,11 @@ h3.formio_form_title {
     border: 1px solid #c0c0c0;
 }
 
+#formio_form_server_error {
+    float: left;
+    width: 100%;
+}
+
 /**
   WORKAROUND
   ----------

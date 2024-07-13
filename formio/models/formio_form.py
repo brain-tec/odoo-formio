@@ -24,6 +24,7 @@ _logger = logging.getLogger(__name__)
 STATE_PENDING = 'PENDING'
 STATE_DRAFT = 'DRAFT'
 STATE_COMPLETE = 'COMPLETE'
+STATE_ERROR = 'ERROR'
 STATE_CANCEL = 'CANCEL'
 
 
@@ -60,6 +61,7 @@ class Form(models.Model):
         selection=[
             (STATE_PENDING, 'Pending'),
             (STATE_DRAFT, 'Draft'),
+            (STATE_ERROR, 'Error'),
             (STATE_COMPLETE, 'Completed'),
             (STATE_CANCEL, 'Canceled'),
         ],
@@ -377,12 +379,18 @@ class Form(models.Model):
         return data
 
     def after_submit(self):
-        """ Function is called everytime a form is submitted. """
-        pass
+        """ Method is called everytime a form is submitted. """
+        for action in self.builder_id.server_action_ids.filtered(
+            lambda a: a.formio_form_execute_after_action in ['submit', 'submit_save_draft']
+        ):
+            action.with_context(active_id=self.id).run()
 
     def after_save_draft(self):
-        """ Function is called everytime a form is save as draft. """
-        pass
+        """ Method is called everytime a form is save as draft. """
+        for action in self.builder_id.server_action_ids.filtered(
+            lambda a: a.formio_form_execute_after_action in ['save_draft', 'submit_save_draft']
+        ):
+            action.with_context(active_id=self.id).run()
 
     def action_view_formio(self):
         # return {

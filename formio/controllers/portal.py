@@ -1,12 +1,16 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 import json
 import logging
 
-from odoo import http, fields
+from markupsafe import Markup
+
+from odoo import fields, http, _
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
+
+from .main import FormioBaseController
 
 from ..models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
 from ..models.formio_form import (
@@ -23,7 +27,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioCustomerPortal(CustomerPortal):
+class FormioCustomerPortal(FormioBaseController, CustomerPortal):
 
     def _prepare_home_portal_values(self, counters):
         values = super()._prepare_home_portal_values(counters)
@@ -279,16 +283,26 @@ class FormioCustomerPortal(CustomerPortal):
             return res
 
         if builder.schema:
-            res['schema'] = json.loads(builder.schema)
-            res['options'] = self._get_form_js_options(builder)
-            res['params'] = self._get_form_js_params(builder)
-            res['locales'] = self._get_form_js_locales(builder)
             res['csrf_token'] = request.csrf_token()
-
-        args = request.httprequest.args
-        etl_odoo_config = builder.sudo()._etl_odoo_config(params=args.to_dict())
-        res['options'].update(etl_odoo_config.get('options', {}))
-
+            try:
+                res['schema'] = json.loads(builder.schema)
+                res['options'] = self._get_form_js_options(builder)
+                res['locales'] = self._get_form_js_locales(builder)
+                res['params'] = self._get_form_js_params(builder)
+            except Exception as e:
+                error_message, error_traceback_html = self._exception_load(e)
+                res['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    res['error_traceback'] = Markup(error_traceback_html)
+        try:
+            args = request.httprequest.args
+            etl_odoo_config = builder.sudo()._etl_odoo_config(params=args.to_dict())
+            res['options'].update(etl_odoo_config.get('options', {}))
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_load(e)
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(res)
 
     @http.route('/formio/portal/form/new/<string:builder_uuid>/submission', type='http', auth='user', methods=['GET'], csrf=False, website=True)
@@ -297,13 +311,19 @@ class FormioCustomerPortal(CustomerPortal):
 
         if not builder:
             _logger.info('formio.builder with UUID %s not found' % builder_uuid)
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
 
         args = request.httprequest.args
-        submission_data = {}
-        etl_odoo_data = builder.sudo()._etl_odoo_data(params=args.to_dict())
-        submission_data.update(etl_odoo_data)
+        submission_data = {'submission': {}}
+        try:
+            etl_odoo_data = builder.sudo()._etl_odoo_data(params=args.to_dict())
+            submission_data['submission'].update(etl_odoo_data)
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_load(e, submission_data)
+            submission_data['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                submission_data['error_traceback'] = Markup(error_traceback_html)
         return request.make_json_response(submission_data)
 
     @http.route('/formio/portal/form/new/<string:builder_uuid>/submit', type='http', auth="user", methods=['POST'], csrf=False, website=True)
@@ -315,11 +335,13 @@ class FormioCustomerPortal(CustomerPortal):
         (frontend/JS code) to: /formio/form/<string:uuid>/submit
         """
         self.validate_csrf()
+        res = {}
         builder = self._get_builder_uuid(builder_uuid)
 
         if not builder:
-            # TODO raise or set exception (in JSON resonse) ?
-            return
+            _logger.info('formio.builder with UUID %s not found' % builder_uuid)
+            res = {'error_message': _('The form was not found.')}
+            return request.make_json_response(res)
 
         post = request.get_json_data()
         Form = request.env['formio.form']
@@ -343,22 +365,27 @@ class FormioCustomerPortal(CustomerPortal):
             vals['state'] = FORM_STATE_COMPLETE
 
         context = {'tracking_disable': True}
-        form = Form.with_context(**context).create(vals)
 
-        if vals.get('state') == FORM_STATE_COMPLETE:
-            form.after_submit()
-        elif vals.get('state') == FORM_STATE_DRAFT:
-            form.after_save_draft()
-        request.session['formio_last_form_uuid'] = form.uuid
-
-        # debug mode is checked/handled
-        log_form_submisssion(form)
-
-        res = {
+        try:
+            form = Form.with_context(**context).create(vals)
+            if vals.get('state') == FORM_STATE_COMPLETE:
+                form.after_submit()
+            elif vals.get('state') == FORM_STATE_DRAFT:
+                form.after_save_draft()
+            request.session['formio_last_form_uuid'] = form.uuid
+            # debug mode is checked/handled
+            log_form_submisssion(form)
+        except Exception as e:
+            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = error_traceback_html
+            form.write({'state': 'ERROR'})
+        res.update({
             'form_uuid': form.uuid,
             'submission_data': form.submission_data
-        }
-        request.make_json_response(res)
+        })
+        return request.make_json_response(res)
 
     #########
     # Helpers
