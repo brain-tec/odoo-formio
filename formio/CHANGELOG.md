@@ -1,5 +1,12 @@
 # Changelog
 
+## 17.0.6.0.0
+
+Improve error handling while loading or submitting a form:
+- This concerns the (backend, portal, public) endpoints: `/config`, `/submission`, `/submit`.
+- An error message is displayed above the form.
+- If debug mode is enabled for an internal user, the traceback is also displayed.
+
 ## 17.0.5.0.2
 
 Improve the reset of installed formio.js versions (download and reinstall of formio.js assets).\

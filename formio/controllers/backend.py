@@ -1,8 +1,10 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 import json
 import logging
+
+from markupsafe import Markup
 
 from odoo import http, fields, _
 from odoo.http import request
@@ -142,19 +144,20 @@ class FormioController(FormioBaseController, http.Controller):
 
         # Submission data
         if form and form.submission_data:
-            submission_data = json.loads(form.submission_data)
+            submission_data = {'submission': json.loads(form.submission_data)}
         else:
-            submission_data = {}
+            submission_data = {'submission': {}}
 
         # ETL Odoo data
         if form:
             try:
                 etl_odoo_data = form.sudo()._etl_odoo_data()
-                submission_data.update(etl_odoo_data)
+                submission_data['submission'].update(etl_odoo_data)
             except Exception as e:
-                error = self._exception_submission(e, submission_data, form.debug_mode)
-                # TODO add keys in submission_data
-                submission_data['error'] = error
+                error_message, error_traceback_html = self._exception_load(e)
+                submission_data['error_message'] = error_message
+                if request.session.debug and request.env.user.has_group('base.group_user'):
+                    submission_data['error_traceback'] = Markup(error_traceback_html)
 
         return request.make_json_response(submission_data)
 
@@ -168,39 +171,40 @@ class FormioController(FormioBaseController, http.Controller):
 
         form = self._get_form(uuid, 'write')
         if not form:
-            res['error'] = _('The form was not found.')
-            return res
+            res['error_message'] = _('The form was not found.')
+            return request.make_json_response(res)
         if form.state == FORM_STATE_COMPLETE:
-            res['error'] = _('The form has already been submitted.')
-            return res
+            res['error_message'] = _('The form has already been submitted.')
+            res['options'] = {'readOnly': True}
+            return request.make_json_response(res)
+
+        post = request.get_json_data()
+        vals = {
+            'submission_data': json.dumps(post['data']),
+            'submission_user_id': request.env.user.id,
+            'submission_date': fields.Datetime.now(),
+        }
+        if post.get('saveDraft') or (
+            post['data'].get('saveDraft') and not post['data'].get('submit')
+        ):
+            vals['state'] = FORM_STATE_DRAFT
+        else:
+            vals['state'] = FORM_STATE_COMPLETE
 
         try:
-            post = request.get_json_data()
-            vals = {
-                'submission_data': json.dumps(post['data']),
-                'submission_user_id': request.env.user.id,
-                'submission_date': fields.Datetime.now(),
-            }
-
-            if post.get('saveDraft') or (
-                post['data'].get('saveDraft') and not post['data'].get('submit')
-            ):
-                vals['state'] = FORM_STATE_DRAFT
-            else:
-                vals['state'] = FORM_STATE_COMPLETE
-
             form.write(vals)
-
             if vals.get('state') == FORM_STATE_COMPLETE:
                 form.after_submit()
             elif vals.get('state') == FORM_STATE_DRAFT:
                 form.after_save_draft()
-
             log_form_submisssion(form)
             res['submission_data'] = form.submission_data
         except Exception as e:
-            error = self._exception_submit(e, post['data'], form.debug_mode)
-            res['error'] = error
+            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            res['error_message'] = error_message
+            if request.session.debug and request.env.user.has_group('base.group_user'):
+                res['error_traceback'] = error_traceback_html
+            form.write({'state': 'ERROR'})
         return request.make_json_response(res)
 
     #########

@@ -154,6 +154,25 @@ export class OdooFormioForm extends Component {
                 self.csrfToken = res.csrf_token;
                 self.createForm();
             }
+            if (result.hasOwnProperty('error_message')) {
+                let error = $('#formio_form_server_error');
+                let errorMessage = $('#formio_form_server_error_message');
+                let errorTraceback = $('#formio_form_server_error_traceback');
+                errorMessage.html(result['error_message']);
+                if (result.hasOwnProperty('error_traceback')) {
+                    errorTraceback.html(result['error_traceback']);
+                    errorTraceback.removeClass('d-none');
+                }
+                error.removeClass('d-none');
+                // scroll embed and parent
+                window.scrollTo(0, 0);
+                window.parent.postMessage({odooFormioMessage: 'formioScrollTop', params: {}});
+                // disables action buttons (submit, saveDraft)
+                FormioUtils.eachComponent(form.components, (component) => {
+                    component.disabled = true;
+                }, true);
+                form.redraw();
+            }
         });
     }
 
@@ -510,15 +529,24 @@ export class OdooFormioForm extends Component {
             form.on('submit', function(submission) {
                 const data = {'data': submission.data};
                 self.postData(self.submitUrl, data).then(function(res) {
-                    if (res.hasOwnProperty('error')) {
+                    if (res.hasOwnProperty('error_message')) {
                         let error = $('#formio_form_server_error');
-                        let errorContent = $('#formio_form_server_error pre');
-                        errorContent.html(res['error']);
-                        error.show();
+                        let errorMessage = $('#formio_form_server_error_message');
+                        let errorTraceback = $('#formio_form_server_error_traceback');
+                        errorMessage.html(res['error_message']);
+                        if (res.hasOwnProperty('error_traceback')) {
+                            errorTraceback.html(res['error_traceback']);
+                            errorTraceback.removeClass('d-none');
+                        }
                         error.removeClass('d-none');
                         // scroll embed and parent
                         window.scrollTo(0, 0);
                         window.parent.postMessage({odooFormioMessage: 'formioScrollTop', params: {}});
+                        // disables action buttons (submit, saveDraft)
+                        FormioUtils.eachComponent(form.components, (component) => {
+                            component.disabled = true;
+                        }, true);
+                        form.redraw();
                     }
                     else {
                         form.emit('submitDone', submission);
@@ -568,18 +596,27 @@ export class OdooFormioForm extends Component {
                     }
                 }
                 self.getData(submissionUrl, {}).then(function(result) {
-                    if (result.hasOwnProperty('error')) {
+                    if (!$.isEmptyObject(result)) {
+                        form.submission = {'data': result['submission']};
+                    }
+                    if (result.hasOwnProperty('error_message')) {
                         let error = $('#formio_form_server_error');
-                        let errorContent = $('#formio_form_server_error pre');
-                        errorContent.html(result['error']);
-                        error.show();
+                        let errorMessage = $('#formio_form_server_error_message');
+                        let errorTraceback = $('#formio_form_server_error_traceback');
+                        errorMessage.html(result['error_message']);
+                        if (result.hasOwnProperty('error_traceback')) {
+                            errorTraceback.html(result['error_traceback']);
+                            errorTraceback.removeClass('d-none');
+                        }
                         error.removeClass('d-none');
                         // scroll embed and parent
                         window.scrollTo(0, 0);
                         window.parent.postMessage({odooFormioMessage: 'formioScrollTop', params: {}});
-                    }
-                    else if (!$.isEmptyObject(result)) {
-                        form.submission = {'data': result};
+                        // disables action buttons (submit, saveDraft)
+                        FormioUtils.eachComponent(form.components, (component) => {
+                            component.disabled = true;
+                        }, true);
+                        form.redraw();
                     }
                     self.hideOverlay();
                 });

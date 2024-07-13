@@ -10,6 +10,7 @@ See LICENSE file for full licensing details. -->
             <tree string="Form Submissions"
                   decoration-info="state in ('DRAFT')"
                   decoration-success="state in ('COMPLETE')"
+                  decoration-danger="state in ('ERROR')"
                   decoration-muted="state in ('CANCEL')">
                 <field name="id"/>
                 <field name="uuid" optional="hide"/>
@@ -162,7 +163,8 @@ See LICENSE file for full licensing details. -->
                     <button
                         name="action_copy_to_current" type="object" string="Copy To Current"
                         invisible="allow_copy == False or copy_to_current == False"/>
-                    <field name="state" widget="statusbar" statusbar_visible="PENDING,DRAFT,COMPLETE,CANCEL"/>
+                    <field name="state" widget="statusbar" statusbar_visible="PENDING,DRAFT,COMPLETE,CANCEL" invisible="state == 'ERROR'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="PENDING,DRAFT,ERROR,COMPLETE,CANCEL" invisible="state != 'ERROR'"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">

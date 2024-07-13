@@ -80,6 +80,9 @@ See LICENSE file for full licensing details. -->
                                 <t t-elif="form.state == 'DRAFT'">
                                     <span t-attf-class="badge badge-pill badge-warning font-weight-normal mb-1">State: <span t-out="form.display_state"/></span>
                                 </t>
+                                <t t-elif="form.state == 'ERROR'">
+                                    <span t-attf-class="badge badge-pill badge-danger font-weight-normal mb-1">State: <span t-out="form.display_state"/></span>
+                                </t>
                                 <t t-elif="form.state == 'COMPLETE'">
                                     <span t-attf-class="badge badge-pill badge-success font-weight-normal mb-1">State: <span><t t-out="form.display_state"/></span></span>
                                 </t>
@@ -108,8 +111,8 @@ See LICENSE file for full licensing details. -->
                 </t>
 
                 <div id="formio_form_server_error" class="alert alert-danger d-none">
-                    <strong class="mb4">Error</strong>
-                    <pre class="p8"/>
+                    <span id="formio_form_server_error_message"/>
+                    <pre id="formio_form_server_error_traceback" class="d-none mt-4"/>
                 </div>
 
                 <!-- form shall be mounted here -->

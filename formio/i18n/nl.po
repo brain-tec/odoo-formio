@@ -165,7 +165,7 @@ msgid ""
 "Forms</a> \n"
 "    </p>\n"
 "</div>\n"
-"            "
+
 msgstr ""
 "<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
 "    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"

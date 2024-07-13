@@ -174,8 +174,8 @@ See LICENSE file for full licensing details. -->
                 </t>
 
                 <div id="formio_form_server_error" class="alert alert-danger d-none">
-                    <strong class="mb4">Error</strong>
-                    <pre class="p8"/>
+                    <span id="formio_form_server_error_message"/>
+                    <pre id="formio_form_server_error_traceback" class="d-none mt-4"/>
                 </div>
 
                 <!-- form shall be mounted here -->
