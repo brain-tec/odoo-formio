@@ -320,7 +320,7 @@ class FormioCustomerPortal(FormioBaseController, CustomerPortal):
             etl_odoo_data = builder.sudo()._etl_odoo_data(params=args.to_dict())
             submission_data['submission'].update(etl_odoo_data)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_load(e, submission_data)
+            error_message, error_traceback_html = self._exception_load(e)
             submission_data['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
                 submission_data['error_traceback'] = Markup(error_traceback_html)
@@ -376,7 +376,7 @@ class FormioCustomerPortal(FormioBaseController, CustomerPortal):
             # debug mode is checked/handled
             log_form_submisssion(form)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_submit(e, post['data'])
+            error_message, error_traceback_html = self._exception_submit(e, form=form)
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
                 res['error_traceback'] = error_traceback_html

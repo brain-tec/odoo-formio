@@ -21,22 +21,33 @@ _logger = logging.getLogger(__name__)
 
 class FormioBaseController(http.Controller):
 
-    def _exception_load(self, exception, debug=False):
-        message = _('Sorry, something went wrong while loading the form. Please contact us.')
+    def _exception_load(self, exception, **kwargs):
+        message_lines = [
+            _('Sorry, something went wrong while loading the form.'),
+            _('Please contact us.')
+        ]
+        if kwargs.get('form'):
+            message_lines.append('For reference - Form UUID: %s' % kwargs.get('form').uuid)
+        message = '<br/>'.join(message_lines)
         traceback_exc = traceback.format_exc()
         _logger.error(traceback_exc)
-        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc, debug=debug)
+        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc)
         return message, traceback_exc_html
 
-    def _exception_submit(self, exception, submission_data, debug=False):
-        message = _('Sorry, something went wrong while processing the form. Please contact us.')
+    def _exception_submit(self, exception, **kwargs):
+        message_lines = [
+            _('Sorry, something went wrong while processing the form.'),
+            _('Please contact us.')
+        ]
+        if kwargs.get('form'):
+            message_lines.append('For reference - Form UUID: %s' % kwargs.get('form').uuid)
+        message = '<br/>'.join(message_lines)
         traceback_exc = traceback.format_exc()
         _logger.error(traceback_exc)
-        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc, debug=debug)
+        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc)
         return message, traceback_exc_html
 
-    def _traceback_exc_html(self, exception, traceback_exc, debug=False):
-        debug = debug or request.session.debug
+    def _traceback_exc_html(self, exception, traceback_exc):
         se = http.serialize_exception(exception)
         se['debug'] = traceback_exc
         traceback_html = [html_escape(se['debug'])]
