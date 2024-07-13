@@ -21,8 +21,8 @@ class ServerAction(models.Model):
     )
     formio_form_execute_after_action = fields.Selection(
         [
-            ('save_draft', 'Save Draft'),
             ('submit', 'Submit'),
+            ('save_draft', 'Save Draft'),
             ('submit_save_draft', 'Submit and Save Draft')
         ],
         string='Forms Execute After',

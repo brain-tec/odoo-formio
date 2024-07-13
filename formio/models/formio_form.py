@@ -383,14 +383,14 @@ class Form(models.Model):
         for action in self.builder_id.server_action_ids.filtered(
             lambda a: a.formio_form_execute_after_action in ['submit', 'submit_save_draft']
         ):
-            action.with_context(active_id=self.id).run()
+            action.with_context(active_model=self._name, active_id=self.id).run()
 
     def after_save_draft(self):
         """ Method is called everytime a form is save as draft. """
         for action in self.builder_id.server_action_ids.filtered(
             lambda a: a.formio_form_execute_after_action in ['save_draft', 'submit_save_draft']
         ):
-            action.with_context(active_id=self.id).run()
+            action.with_context(active_model=self._name, active_id=self.id).run()
 
     def action_view_formio(self):
         # return {

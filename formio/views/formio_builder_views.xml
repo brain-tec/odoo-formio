@@ -355,7 +355,7 @@ See LICENSE file for full licensing details. -->
                             <group>
                                 <group string="Server Actions" name="server_actions" colspan="2">
                                     <div class="mb-2 text-muted" colspan="2">
-                                        <i class="fa fa-info-circle" title="info"/> Server actions which process the form data / submission<br/>
+                                        <i class="fa fa-info-circle" title="info"/> Server Actions which process the form data / submission.<br/>
                                     </div>
                                     <field name="server_action_ids"
                                            nolabel="1"
