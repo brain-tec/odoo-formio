@@ -25,7 +25,8 @@ class ServerAction(models.Model):
             ('submit', 'Submit'),
             ('submit_save_draft', 'Submit and Save Draft')
         ],
-        string='Forms Execute After'
+        string='Forms Execute After',
+        help='If assigned in a Form Builder (Actions API), this sever action will be executed.'
     )
 
     @api.onchange('model_id')
@@ -41,7 +42,7 @@ class ServerAction(models.Model):
         for rec in self:
             if rec.formio_ref:
                 if re.search(r"[^a-zA-Z0-9_-]", rec.formio_ref) is not None:
-                    raise ValidationError(_('Forms Ref is invalid. Use ASCII letters, digits, "-" or "_".'))
+                    raise ValidationError(_('Form Ref is invalid. Use ASCII letters, digits, "-" or "_".'))
 
     @api.constrains('formio_ref')
     def _constraint_unique_formio_ref(self):
@@ -49,7 +50,7 @@ class ServerAction(models.Model):
             domain = [("formio_ref", "=", rec.formio_ref)]
             if rec.formio_ref and self.search_count(domain) > 1:
                 msg = _(
-                    'A Server Action with Forms Ref "%s" already exists.\nForms Ref should be unique.'
+                    'A Server Action with Form Ref "%s" already exists.\nForm Ref should be unique.'
                 ) % (rec.formio_ref)
                 raise ValidationError(msg)
 

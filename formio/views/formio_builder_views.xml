@@ -356,7 +356,6 @@ See LICENSE file for full licensing details. -->
                                 <group string="Server Actions" name="server_actions" colspan="2">
                                     <div class="mb-2 text-muted" colspan="2">
                                         <i class="fa fa-info-circle" title="info"/> Server actions which process the form data / submission<br/>
-                                        <i class="fa fa-info-circle" title="info"/> This is used by the <a href="https://apps.odoo.com/apps/modules/16.0/formio_deploy/" target="_blank"><i class="fa fa-link"/> Deploy Tool (formio_deploy) module</a><br/>
                                     </div>
                                     <field name="server_action_ids"
                                            nolabel="1"
@@ -364,10 +363,10 @@ See LICENSE file for full licensing details. -->
                                            readonly="is_locked == True">
                                         <tree>
                                             <field name="name"/>
-                                            <field name="model_id"/>
-                                            <field name="formio_ref"/>
+                                            <field name="formio_form_execute_after_action" string="Execute After"/>
+                                            <field name="model_id" optional="show"/>
                                             <field name="state"/>
-                                            <field name="formio_form_execute_after_action" string="Execute After State"/>
+                                            <field name="formio_ref" optional="hide"/>
                                             <field name="sequence" optional="hide"/>
                                         </tree>
                                     </field>
