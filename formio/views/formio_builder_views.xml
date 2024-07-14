@@ -356,8 +356,10 @@ See LICENSE file for full licensing details. -->
                                 <group string="Server Actions" name="server_actions" colspan="2">
                                     <div class="mb-2 text-muted" colspan="2">
                                         <i class="fa fa-info-circle" title="info"/> Server Actions which process the form data / submission.<br/>
+                                        <i class="fa fa-info-circle" title="info"/> Users with access are in the group "Administration / Settings", then the actions are available here.
                                     </div>
                                     <field name="server_action_ids"
+                                           groups="base.group_system"
                                            nolabel="1"
                                            colspan="2"
                                            readonly="is_locked == True">
