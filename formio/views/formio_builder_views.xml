@@ -140,6 +140,7 @@ See LICENSE file for full licensing details. -->
                             <field name="version"/>
                             <field name="version_comment" required="version > 1"/>
                             <field name="parent_id" string="Parent Version"/>
+                            <field name="formio_form_model_id" invisible="True"/>
                             <field name="is_schema_empty" invisible="True"/>
                         </group>
                         <group>
@@ -374,6 +375,7 @@ See LICENSE file for full licensing details. -->
                                     </div>
                                     <field name="server_action_ids"
                                            groups="base.group_system"
+                                           context="{'default_model_id': formio_form_model_id, 'default_formio_form_execute_after_action': 'submit', 'default_state': 'code'}"
                                            nolabel="1"
                                            colspan="2"
                                            readonly="is_locked == True">
