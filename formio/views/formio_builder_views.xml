@@ -378,12 +378,12 @@ See LICENSE file for full licensing details. -->
                                            colspan="2"
                                            readonly="is_locked == True">
                                         <tree>
+                                            <field name="sequence" widget="handle"/>
                                             <field name="name"/>
                                             <field name="formio_form_execute_after_action" string="Execute After"/>
                                             <field name="model_id" optional="show"/>
                                             <field name="state"/>
                                             <field name="formio_ref" optional="hide"/>
-                                            <field name="sequence" optional="hide"/>
                                         </tree>
                                     </field>
                                 </group>
