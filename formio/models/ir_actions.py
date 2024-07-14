@@ -30,7 +30,16 @@ class ServerAction(models.Model):
         string='Forms Execute After',
         help='If assigned in a Form Builder (Actions API), this sever action will be executed.'
     )
-    formio_builder_ids = fields.Many2many('formio.builder', compute='_compute_formio_builder_ids')
+    formio_builder_ids = fields.Many2many(
+        'formio.builder',
+        compute='_compute_formio_builder_ids',
+        search='_search_formio_builder_ids'
+    )
+
+    def _search_formio_builder_ids(self, operator, operand):
+        domain = [('id', 'in', operand)]
+        builders = self.env['formio.builder'].search(domain)
+        return [('id', 'in', builders.mapped('server_action_ids').ids)]
 
     @api.model_create_multi
     def create(self, vals_list):

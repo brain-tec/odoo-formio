@@ -498,7 +498,7 @@ class Builder(models.Model):
             'view_mode': 'tree,form',
             'views': [(tree_view.id, 'tree'), (False, 'form')],
             'target': 'current',
-            'domain': [('id', 'in', self.server_action_ids.ids)],
+            'domain': [('formio_builder_ids', '=', [self.id])],
             "context": {
                 'default_model_id': self.env.ref('formio.model_formio_form').id,
                 'default_formio_form_execute_after_action': 'submit',
