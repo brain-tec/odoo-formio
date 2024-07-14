@@ -97,7 +97,7 @@ class Builder(models.Model):
     version_comment = fields.Text("Version Comment")
     user_id = fields.Many2one('res.users', string='Assigned user', tracking=True)  # TODO old field, remove?
     forms = fields.One2many('formio.form', 'builder_id', string='Forms')
-    forms_count = fields.Integer(string='Forms Count', compute='_compute_forms_count')
+    forms_count = fields.Integer(compute='_compute_count_fields')
     backend_use_draft = fields.Boolean(
         string='Use Draft in Backend',
         default=True,
@@ -235,6 +235,7 @@ class Builder(models.Model):
         compute='_compute_debug_mode'
     )
     translations = fields.One2many('formio.builder.translation', 'builder_id', string='Translations', copy=True)
+    translations_count = fields.Integer(compute='_compute_count_fields')
     languages = fields.One2many('res.lang', compute='_compute_languages', string='Languages')
     allow_force_update_state_group_ids = fields.Many2many(
         'res.groups', string='Allow groups to force update State',
@@ -253,6 +254,7 @@ class Builder(models.Model):
         string='Server Actions',
         domain="[('model_name', '=', 'formio.form')]"
     )
+    server_action_count = fields.Integer(compute='_compute_count_fields')
     hook_api_validation = fields.Boolean(
         string='Hook Validation API', default=False, copy=True)
     overlay_api_change = fields.Boolean(
@@ -480,6 +482,23 @@ class Builder(models.Model):
             "context": {}
         }
 
+    def action_view_server_actions(self):
+        tree_view = self.env.ref('formio.view_server_action_tree')
+        return {
+            'name': 'Server Actions',
+            'type': 'ir.actions.act_window',
+            'res_model': 'ir.actions.server',
+            'view_mode': 'tree,form',
+            'views': [(tree_view.id, 'tree'), (False, 'form')],
+            'target': 'current',
+            'domain': [('id', 'in', self.server_action_ids.ids)],
+            "context": {
+                'default_model_id': self.env.ref('formio.model_formio_form').id,
+                'default_formio_form_execute_after_action': 'submit',
+                'default_state': 'code'
+            }
+        }
+
     def action_view_forms(self):
         forms_view = self.env.ref('formio.view_formio_form_tree')
         return {
@@ -493,8 +512,10 @@ class Builder(models.Model):
             'context': {}
         }
 
-    def _compute_forms_count(self):
+    def _compute_count_fields(self):
         for r in self:
+            r.translations_count = len(r.translations)
+            r.server_action_count = len(r.server_action_ids)
             r.forms_count = len(r.forms)
 
     def action_draft(self):

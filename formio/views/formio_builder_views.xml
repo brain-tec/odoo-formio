@@ -101,10 +101,24 @@ See LICENSE file for full licensing details. -->
                                 <span>Form Builder</span>
                             </div>
                         </button>
-                        <button name="%(action_formio_builder_translation)d" type="action" string="Translations"
+                        <button name="%(action_formio_builder_translation)d"
+                                type="action"
                                 context="{'default_builder_id': id, 'search_default_builder_id': id}"
-                                groups="formio.group_formio_admin" icon="fa-language"/>
-                        <button name="action_view_forms" type="object" class="oe_stat_button"
+                                class="oe_stat_button"
+                                groups="formio.group_formio_admin"
+                                icon="fa-language">
+                            <field string="Translations" name="translations_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_view_server_actions"
+                                type="object"
+                                class="oe_stat_button"
+                                groups="base.group_system"
+                                icon="fa-cog">
+                            <field string="Server Actions" name="server_action_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_view_forms"
+                                type="object"
+                                class="oe_stat_button"
                                 context="{'default_builder_id': id}"
                                 groups="formio.group_formio_admin" icon="fa-file-text">
                             <field string="Forms" name="forms_count" widget="statinfo"/>

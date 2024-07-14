@@ -29,6 +29,16 @@ class ServerAction(models.Model):
         help='If assigned in a Form Builder (Actions API), this sever action will be executed.'
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super().create(vals_list)
+        active_model = self._context.get('active_model')
+        active_id = self._context.get('active_id')
+        if active_model == 'formio.builder' and active_id:
+            builder = self.env['formio.builder'].browse(active_id)
+            builder.server_action_ids = [fields.Command.link(res.id)]
+        return res
+
     @api.onchange('model_id')
     def _onchange_formio_ref(self):
         form_model = self.env.ref('formio.model_formio_form')

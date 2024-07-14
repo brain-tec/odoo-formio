@@ -1,5 +1,11 @@
 # Changelog
 
+## 17.0.6.0.1
+
+Improvements:
+- In Form Builder, add smartbutton Server Actions.
+- Rename Form Builder computed count fields method to `_compute_count_fields`.
+
 ## 17.0.6.0.0
 
 Improve error handling while loading or submitting a form:
