@@ -17,6 +17,8 @@ class ServerAction(models.Model):
 
     formio_ref = fields.Char(
         string="Forms Ref",
+        compute='_compute_formio_ref',
+        store=True,
         help="Identifies a server action with related form builder.",
     )
     formio_form_execute_after_action = fields.Selection(
@@ -39,13 +41,14 @@ class ServerAction(models.Model):
             builder.server_action_ids = [fields.Command.link(res.id)]
         return res
 
-    @api.onchange('model_id')
-    def _onchange_formio_ref(self):
+    @api.depends('model_id')
+    def _compute_formio_ref(self):
         form_model = self.env.ref('formio.model_formio_form')
-        if self.model_id.id == form_model.id and not self.formio_ref:
-            self.formio_ref = str(uuid.uuid4())
-        elif self.model_id.id != form_model.id:
-            self.formio_ref = False
+        for r in self:
+            if r.model_id.id == form_model.id and not r.formio_ref:
+                r.formio_ref = str(uuid.uuid4())
+            elif r.model_id.id != form_model.id:
+                r.formio_ref = False
 
     @api.constrains('formio_ref')
     def constaint_check_formio_ref(self):
