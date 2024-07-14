@@ -247,13 +247,13 @@ See LICENSE file for full licensing details. -->
                                 <group name="public_current_url" colspan="2" invisible="public_current_url == False">
                                     <field name="public_current_url" widget="CopyClipboardChar" style="font-size: 1.0em;"/>
                                     <div class="text-muted mb-4" colspan="2">
-                                        <i class="fa fa-info-circle" title="info"/> <strong>Public Current URL:</strong> Public Form with versioning (same Name) in state Current
+                                        <i class="fa fa-info-circle" title="info"/> Public Current URL: Public Form with versioning (same Name) in state Current
                                     </div>
                                 </group>
                                 <group name="public_url" colspan="2" invisible="public_url == False">
                                     <field name="public_url" widget="CopyClipboardChar" style="font-size: 1.0em;"/>
                                     <div class="text-muted mb-4" colspan="2">
-                                        <i class="fa fa-info-circle" title="info"/> <strong>Public URL:</strong> Public Form for this form builder version
+                                        <i class="fa fa-info-circle" title="info"/> Public URL: Public Form for this form builder version
                                     </div>
                                 </group>
                                 <group name="general" string="General">
@@ -267,7 +267,7 @@ See LICENSE file for full licensing details. -->
                                         <field name="public_access_interval_type" class="oe_inline ml-2" groups="formio.group_formio_admin" required="public == True"/>
                                     </div>
                                     <div class="text-muted" colspan="2" invisible="public_access_rule_type != 'time_interval'">
-                                        <i class="fa fa-info-circle" title="info"/><strong> Expire After:</strong> Applicable on the Form it's (datetime field) <strong>Public Access From</strong>.
+                                        <i class="fa fa-info-circle" title="info"/> Expire After: Applicable on the Form it's (datetime field) Public Access From.
                                     </div>
                                 </group>
                                 <group name="public_redirect_after_save_draft" string="Redirect After Save Draft">
@@ -395,7 +395,7 @@ See LICENSE file for full licensing details. -->
                         </page>
                         <page string="JS Options" name="javascript_options" groups="formio.group_formio_admin">
                             <div class="text-muted mt-4">
-                                <i class="fa fa-info-circle" title="info"/><strong> Documentation</strong><br/>
+                                <i class="fa fa-info-circle" title="info"/> Documentation<br/>
                                 For example, Options could contain the Form Builder editForm with some File component settings:<br/>
                                 <a href="https://github.com/formio/formio.js/blob/master/src/components/file/editForm/File.edit.file.js" target="_blank">
                                     https://github.com/formio/formio.js/blob/master/src/components/file/editForm/File.edit.file.js
@@ -416,13 +416,13 @@ See LICENSE file for full licensing details. -->
   }
 }</pre>
                             </div>
-                            <div style="background-color: #e9ecef; padding: 0 10px;">
+                            <div>
                                 <group>
                                     <field
                                         name="formio_js_options_id"
                                         string="Select formio.js Options"
                                         readonly="is_locked == True"
-                                        style="height: 100%"/>
+                                        placeholder="Select from predefined ..."/>
                                 </group>
                             </div>
                             <field name="formio_js_options"

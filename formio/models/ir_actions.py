@@ -58,6 +58,8 @@ class ServerAction(models.Model):
             for r in self:
                 if r.id in builder.server_action_ids.ids:
                     r.formio_builder_ids = [fields.Command.link(builder.id)]
+                else:
+                    r.formio_builder_ids = False
 
     @api.constrains('formio_ref')
     def constaint_check_formio_ref(self):
