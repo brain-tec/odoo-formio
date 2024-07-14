@@ -370,8 +370,9 @@ See LICENSE file for full licensing details. -->
                             <group>
                                 <group string="Server Actions" name="server_actions" colspan="2">
                                     <div class="mb-2 text-muted" colspan="2">
-                                        <i class="fa fa-info-circle" title="info"/> Server Actions which process the form data / submission.<br/>
-                                        <i class="fa fa-info-circle" title="info"/> Users with access are in the group "Administration / Settings", then the actions are available here.
+                                        <i class="fa fa-info-circle" title="info"/> Server Actions which process the form submission.<br/>
+                                        <i class="fa fa-info-circle" title="info"/> Users with access are in the group "Administration / Settings", then the actions are available here.<br/>
+                                        <i class="fa fa-info-circle" title="info"/> Be careful about ordering the sequence if a server action is linked to other Form Builders.
                                     </div>
                                     <field name="server_action_ids"
                                            groups="base.group_system"
@@ -383,8 +384,9 @@ See LICENSE file for full licensing details. -->
                                             <field name="sequence" widget="handle"/>
                                             <field name="name"/>
                                             <field name="formio_form_execute_after_action" string="Execute After"/>
-                                            <field name="model_id" optional="show"/>
+                                            <field name="model_id" optional="hide"/>
                                             <field name="state"/>
+                                            <field name="formio_builder_ids" widget="many2many_tags" string="Form Builders" optional="show"/>
                                             <field name="formio_ref" optional="hide"/>
                                         </tree>
                                     </field>

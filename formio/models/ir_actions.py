@@ -30,6 +30,7 @@ class ServerAction(models.Model):
         string='Forms Execute After',
         help='If assigned in a Form Builder (Actions API), this sever action will be executed.'
     )
+    formio_builder_ids = fields.Many2many('formio.builder', compute='_compute_formio_builder_ids')
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -49,6 +50,14 @@ class ServerAction(models.Model):
                 r.formio_ref = str(uuid.uuid4())
             elif r.model_id.id != form_model.id:
                 r.formio_ref = False
+
+    def _compute_formio_builder_ids(self):
+        domain = [('server_action_ids', 'in', self.ids)]
+        builders = self.env['formio.builder'].search(domain)
+        for builder in builders:
+            for r in self:
+                if r.id in builder.server_action_ids.ids:
+                    r.formio_builder_ids = [fields.Command.link(builder.id)]
 
     @api.constrains('formio_ref')
     def constaint_check_formio_ref(self):
