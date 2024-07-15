@@ -63,12 +63,12 @@ class ServerAction(models.Model):
     def _compute_formio_builder_ids(self):
         domain = [('server_action_ids', 'in', self.ids)]
         builders = self.env['formio.builder'].search(domain)
-        for builder in builders:
-            for r in self:
+        for r in self:
+            for builder in builders:
                 if r.id in builder.server_action_ids.ids:
                     r.formio_builder_ids = [fields.Command.link(builder.id)]
-                else:
-                    r.formio_builder_ids = False
+            else:
+                r.formio_builder_ids = False
 
     @api.constrains('formio_ref')
     def constaint_check_formio_ref(self):
