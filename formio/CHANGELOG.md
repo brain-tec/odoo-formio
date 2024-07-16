@@ -13,6 +13,18 @@ Improve error handling while loading or submitting a form:
 - An error message is displayed above the form.
 - If debug mode is enabled for an internal user, the traceback is also displayed.
 
+Implement hooks to execute Server Action after: submit, save draft.
+- Add model `ir.actions.server` field `formio_form_execute_after_action`.
+- `formio.form` model: Methods `after_submit` and `after_save_draft` execute the linked server action(s).
+
+**UPDATE WARNING**
+
+Possible **Internal server error** (not on Odoo.sh).\
+Solve by updating the `formio` module from the `odoo-bin` (CLI), e.g:
+
+Run with the odoo OS user:
+`odoo-bin -u formio -c <config> -d <database> --stop-after-init`
+
 ## 17.0.5.0.2
 
 Improve the reset of installed formio.js versions (download and reinstall of formio.js assets).\
