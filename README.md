@@ -9,12 +9,12 @@
 
 Official website: https://www.novaforms.app
 
-### Documentation and Wiki
-
-Wiki: [Go to the Wiki](https://github.com/novacode-nl/odoo-formio/wiki)
-
 ### Changelog
 
 Check the `CHANGLOG.md` file in a module.
 
 See the **Forms** (formio) app module [CHANGELOG.md](https://github.com/novacode-nl/odoo-formio/blob/17.0/formio/CHANGELOG.md)
+
+### Contributing and CLA
+
+[The Contributing and CLA page](https://github.com/novacode-nl/odoo-formio/wiki/Contributing-and-CLA)
