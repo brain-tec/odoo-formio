@@ -4,7 +4,7 @@
 from odoo import models
 from odoo.http import request
 
-from ..controllers.utils import BadCSRF
+from ..controllers.exceptions import BadCSRF
 
 
 class IrHttp(models.AbstractModel):

@@ -7,7 +7,7 @@ import uuid
 
 from odoo.http import MISSING_CSRF_WARNING, request
 
-from ..exceptions import BadCSRF
+from .exceptions import BadCSRF
 
 
 _logger = logging.getLogger(__name__)

@@ -2,7 +2,6 @@
 # See LICENSE file for full licensing details.
 
 import logging
-import traceback
 
 from io import BytesIO
 from os.path import dirname
@@ -14,49 +13,11 @@ except ImportError:
 
 from odoo import http, _
 from odoo.http import request
-from odoo.tools.misc import html_escape
 
 _logger = logging.getLogger(__name__)
 
 
 class FormioBaseController(http.Controller):
-
-    def _exception_load(self, exception, **kwargs):
-        message_lines = [
-            _('Sorry, something went wrong while loading the form.'),
-            _('Please contact us.')
-        ]
-        if kwargs.get('form'):
-            message_lines.append('For reference - Form UUID: %s' % kwargs.get('form').uuid)
-        message = '<br/>'.join(message_lines)
-        traceback_exc = traceback.format_exc()
-        _logger.error(traceback_exc)
-        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc)
-        return message, traceback_exc_html
-
-    def _exception_submit(self, exception, **kwargs):
-        message_lines = [
-            _('Sorry, something went wrong while processing the form.'),
-            _('Please contact us.')
-        ]
-        if kwargs.get('form'):
-            message_lines.append('For reference - Form UUID: %s' % kwargs.get('form').uuid)
-        message = '<br/>'.join(message_lines)
-        traceback_exc = traceback.format_exc()
-        _logger.error(traceback_exc)
-        traceback_exc_html = self._traceback_exc_html(exception, traceback_exc)
-        return message, traceback_exc_html
-
-    def _traceback_exc_html(self, exception, traceback_exc):
-        se = http.serialize_exception(exception)
-        se['debug'] = traceback_exc
-        traceback_html = [html_escape(se['debug'])]
-        traceback_html = '<br/>'.join(traceback_html)
-        traceback_html = traceback_html.replace('\n', '<br/>')
-        traceback_html = traceback_html.replace('\\n', '<br/>')
-        traceback_html = traceback_html.replace('\\\n', '<br/>')
-        traceback_html = traceback_html.replace('\\\\n', '<br/>')
-        return traceback_html
 
     @http.route(['/web/content/<int:id>/fonts/<string:name>'], type='http', auth="public")
     def send_fonts_file(self, id, name, **kwargs):

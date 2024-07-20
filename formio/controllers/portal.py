@@ -4,19 +4,18 @@
 import json
 import logging
 
-from markupsafe import Markup
-
 from odoo import fields, http, _
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
-
-from .main import FormioBaseController
 
 from ..models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
 from ..models.formio_form import (
     STATE_DRAFT as FORM_STATE_DRAFT,
     STATE_COMPLETE as FORM_STATE_COMPLETE,
 )
+
+from .exceptions import FormioException
+
 from .utils import (
     generate_uuid4,
     log_form_submisssion,
@@ -27,7 +26,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioCustomerPortal(FormioBaseController, CustomerPortal):
+class FormioCustomerPortal(CustomerPortal):
 
     def _prepare_home_portal_values(self, counters):
         values = super()._prepare_home_portal_values(counters)
@@ -290,19 +289,21 @@ class FormioCustomerPortal(FormioBaseController, CustomerPortal):
                 res['locales'] = self._get_form_js_locales(builder)
                 res['params'] = self._get_form_js_params(builder)
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e)
+                formio_exception = FormioException(e)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 res['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    res['error_traceback'] = Markup(error_traceback_html)
+                    res['error_traceback'] = error_traceback
         try:
             args = request.httprequest.args
             etl_odoo_config = builder.sudo()._etl_odoo_config(params=args.to_dict())
             res['options'].update(etl_odoo_config.get('options', {}))
         except Exception as e:
-            error_message, error_traceback_html = self._exception_load(e)
+            formio_exception = FormioException(e)
+            error_message, error_traceback = formio_exception.render_exception_load()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = Markup(error_traceback_html)
+                res['error_traceback'] = error_traceback
         return request.make_json_response(res)
 
     @http.route('/formio/portal/form/new/<string:builder_uuid>/submission', type='http', auth='user', methods=['GET'], csrf=False, website=True)
@@ -320,10 +321,11 @@ class FormioCustomerPortal(FormioBaseController, CustomerPortal):
             etl_odoo_data = builder.sudo()._etl_odoo_data(params=args.to_dict())
             submission_data['submission'].update(etl_odoo_data)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_load(e)
+            formio_exception = FormioException(e)
+            error_message, error_traceback = formio_exception.render_exception_load()
             submission_data['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                submission_data['error_traceback'] = Markup(error_traceback_html)
+                submission_data['error_traceback'] = error_traceback
         return request.make_json_response(submission_data)
 
     @http.route('/formio/portal/form/new/<string:builder_uuid>/submit', type='http', auth="user", methods=['POST'], csrf=False, website=True)
@@ -376,10 +378,11 @@ class FormioCustomerPortal(FormioBaseController, CustomerPortal):
             # debug mode is checked/handled
             log_form_submisssion(form)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_submit(e, form=form)
+            formio_exception = FormioException(e, form=form)
+            error_message, error_traceback = formio_exception.render_exception_submit()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = error_traceback_html
+                res['error_traceback'] = error_traceback
             form.write({'state': 'ERROR'})
         res.update({
             'form_uuid': form.uuid,

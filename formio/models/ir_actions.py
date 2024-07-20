@@ -54,21 +54,20 @@ class ServerAction(models.Model):
     @api.depends('model_id')
     def _compute_formio_ref(self):
         form_model = self.env.ref('formio.model_formio_form')
-        for r in self:
-            if r.model_id.id == form_model.id and not r.formio_ref:
-                r.formio_ref = str(uuid.uuid4())
-            elif r.model_id.id != form_model.id:
-                r.formio_ref = False
+        for rec in self:
+            if rec.model_id.id == form_model.id and not rec.formio_ref:
+                rec.formio_ref = str(uuid.uuid4())
+            elif rec.model_id.id != form_model.id:
+                rec.formio_ref = False
 
     def _compute_formio_builder_ids(self):
         domain = [('server_action_ids', 'in', self.ids)]
         builders = self.env['formio.builder'].search(domain)
-        for r in self:
+        for rec in self:
+            rec.formio_builder_ids = self.env['formio.builder'].id
             for builder in builders:
-                if r.id in builder.server_action_ids.ids:
-                    r.formio_builder_ids = [fields.Command.link(builder.id)]
-            else:
-                r.formio_builder_ids = False
+                if rec.id in builder.server_action_ids.ids:
+                    rec.formio_builder_ids = [fields.Command.link(builder.id)]
 
     @api.constrains('formio_ref')
     def constaint_check_formio_ref(self):

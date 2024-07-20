@@ -4,17 +4,16 @@
 import json
 import logging
 
-from markupsafe import Markup
-
 from odoo import http, fields, _
 from odoo.http import request
-
-from .main import FormioBaseController
 
 from ..models.formio_form import (
     STATE_DRAFT as FORM_STATE_DRAFT,
     STATE_COMPLETE as FORM_STATE_COMPLETE,
 )
+
+from .exceptions import FormioException
+
 from .utils import (
     generate_uuid4,
     log_form_submisssion,
@@ -25,7 +24,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioController(FormioBaseController, http.Controller):
+class FormioController(http.Controller):
 
     ##############
     # Form Builder
@@ -154,10 +153,11 @@ class FormioController(FormioBaseController, http.Controller):
                 etl_odoo_data = form.sudo()._etl_odoo_data()
                 submission_data['submission'].update(etl_odoo_data)
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e, form=form)
+                formio_exception = FormioException(e, form=form)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 submission_data['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    submission_data['error_traceback'] = Markup(error_traceback_html)
+                    submission_data['error_traceback'] = error_traceback
 
         return request.make_json_response(submission_data)
 
@@ -200,10 +200,11 @@ class FormioController(FormioBaseController, http.Controller):
             log_form_submisssion(form)
             res['submission_data'] = form.submission_data
         except Exception as e:
-            error_message, error_traceback_html = self._exception_submit(e, form=form)
+            formio_exception = FormioException(e, form=form)
+            error_message, error_traceback = formio_exception.render_exception_submit()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = error_traceback_html
+                res['error_traceback'] = error_traceback
             form.write({'state': 'ERROR'})
         return request.make_json_response(res)
 

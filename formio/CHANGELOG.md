@@ -1,5 +1,13 @@
 # Changelog
 
+## 17.0.6.0.2
+
+This fixes some issues introduced by version 17.0.6.0.0
+- Revert the MRO inheritance of controllers classes back to only `http.Controller`.
+  The MRO caused unpredictable and unsolvable exceptions when using some additional modules.
+- This required a refactoring of the error/excpetion handler while loading or submitting a form.
+  Added the `FormioException` class which does the actual rendering of the error message and traceback.
+
 ## 17.0.6.0.1
 
 Improvements:

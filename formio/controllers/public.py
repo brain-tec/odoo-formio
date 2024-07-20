@@ -4,18 +4,17 @@
 import json
 import logging
 
-from markupsafe import Markup
-
 from odoo import http, fields, _
 from odoo.http import request
-
-from .main import FormioBaseController
 
 from ..models.formio_builder import STATE_CURRENT as BUILDER_STATE_CURRENT
 from ..models.formio_form import (
     STATE_DRAFT as FORM_STATE_DRAFT,
     STATE_COMPLETE as FORM_STATE_COMPLETE,
 )
+
+from .exceptions import FormioException
+
 from .utils import (
     generate_uuid4,
     log_form_submisssion,
@@ -26,7 +25,7 @@ from .utils import (
 _logger = logging.getLogger(__name__)
 
 
-class FormioPublicController(FormioBaseController, http.Controller):
+class FormioPublicController(http.Controller):
 
     ####################
     # Form - public uuid
@@ -67,20 +66,22 @@ class FormioPublicController(FormioBaseController, http.Controller):
                 res['locales'] = self._get_public_form_js_locales(form.builder_id)
                 res['params'] = self._get_public_form_js_params(form.builder_id)
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e, form=form)
+                formio_exception = FormioException(e, form=form)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 res['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    res['error_traceback'] = Markup(error_traceback_html)
+                    res['error_traceback'] = error_traceback
             try:
                 etl_odoo_config = form.builder_id.sudo()._etl_odoo_config(
                     formio_form=form, params=args.to_dict()
                 )
                 res['options'].update(etl_odoo_config.get('options', {}))
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e, form=form)
+                formio_exception = FormioException(e, form=form)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 res['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    res['error_traceback'] = Markup(error_traceback_html)
+                    res['error_traceback'] = error_traceback
         return request.make_json_response(res)
 
     @http.route('/formio/public/form/<string:uuid>/submission', type='http', methods=['GET'], auth='public', csrf=False, website=True)
@@ -101,10 +102,11 @@ class FormioPublicController(FormioBaseController, http.Controller):
                 etl_odoo_data = form.sudo()._etl_odoo_data()
                 submission_data.update(etl_odoo_data)
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e, form=form)
+                formio_exception = FormioException(e, form=form)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 submission_data['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    submission_data['error_traceback'] = Markup(error_traceback_html)
+                    submission_data['error_traceback'] = error_traceback
         return request.make_json_response(submission_data)
 
     @http.route('/formio/public/form/<string:uuid>/submit', type='http', auth="public", methods=['POST'], csrf=False, website=True)
@@ -140,10 +142,11 @@ class FormioPublicController(FormioBaseController, http.Controller):
             # debug mode is checked/handled
             log_form_submisssion(form)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_submit(e, form=form)
+            formio_exception = FormioException(e, form=form)
+            error_message, error_traceback = formio_exception.render_exception_submit()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = error_traceback_html
+                res['error_traceback'] = error_traceback
             form.write({'state': 'ERROR'})
         res.update({
             'form_uuid': uuid,
@@ -226,19 +229,21 @@ class FormioPublicController(FormioBaseController, http.Controller):
                 res['locales'] = self._get_public_form_js_locales(formio_builder)
                 res['params'] = self._get_public_form_js_params(formio_builder)
             except Exception as e:
-                error_message, error_traceback_html = self._exception_load(e)
+                formio_exception = FormioException(e)
+                error_message, error_traceback = formio_exception.render_exception_load()
                 res['error_message'] = error_message
                 if request.session.debug and request.env.user.has_group('base.group_user'):
-                    res['error_traceback'] = Markup(error_traceback_html)
+                    res['error_traceback'] = error_traceback
         args = request.httprequest.args
         try:
             etl_odoo_config = formio_builder.sudo()._etl_odoo_config(params=args.to_dict())
             res['options'].update(etl_odoo_config.get('options', {}))
         except Exception as e:
-            error_message, error_traceback_html = self._exception_load(e)
+            formio_exception = FormioException(e)
+            error_message, error_traceback = formio_exception.render_exception_load()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = Markup(error_traceback_html)
+                res['error_traceback'] = error_traceback
         return request.make_json_response(res)
 
     @http.route('/formio/public/form/new/<string:builder_uuid>/submission', type='http', auth='public', methods=['GET'], csrf=False, website=True)
@@ -256,10 +261,11 @@ class FormioPublicController(FormioBaseController, http.Controller):
             etl_odoo_data = formio_builder.sudo()._etl_odoo_data(params=args.to_dict())
             submission_data.update(etl_odoo_data)
         except Exception as e:
-            error_message, error_traceback_html = self._exception_load(e)
+            formio_exception = FormioException(e)
+            error_message, error_traceback = formio_exception.render_exception_load()
             submission_data['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                submission_data['error_traceback'] = Markup(error_traceback_html)
+                submission_data['error_traceback'] = error_traceback
         return request.make_json_response(submission_data)
 
     @http.route('/formio/public/form/new/<string:builder_uuid>/submit', type='http', auth="public", methods=['POST'], csrf=False, website=True)
@@ -319,10 +325,11 @@ class FormioPublicController(FormioBaseController, http.Controller):
                 'submission_data': form.submission_data
             }
         except Exception as e:
-            error_message, error_traceback_html = self._exception_submit(e, form=form)
+            formio_exception = FormioException(e, form=form)
+            error_message, error_traceback = formio_exception.render_exception_submit()
             res['error_message'] = error_message
             if request.session.debug and request.env.user.has_group('base.group_user'):
-                res['error_traceback'] = error_traceback_html
+                res['error_traceback'] = error_traceback
             form.write({'state': 'ERROR'})
         return request.make_json_response(res)
 
