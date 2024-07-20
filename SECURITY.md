@@ -9,8 +9,7 @@ Due to the dependency with Odoo core/community, this project follows the support
 | 17.0           | :white_check_mark: |
 | 16.0           | :white_check_mark: |
 | 15.0           | :white_check_mark: |
-| 14.0           | :x: |
-| <=13.0         | :x:                |
+| <=14.0         | :x:                |
 
 ## Reporting a Vulnerability
 
