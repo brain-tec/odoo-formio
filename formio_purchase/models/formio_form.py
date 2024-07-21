@@ -7,7 +7,12 @@ from odoo import fields, models
 class Form(models.Model):
     _inherit = 'formio.form'
 
-    purchase_order_id = fields.Many2one('purchase.order', string='Purchase Order', readonly=True)
+    purchase_order_id = fields.Many2one(
+        'purchase.order',
+        string='Purchase Order',
+        readonly=True,
+        ondelete='set null'
+        )
 
     def _prepare_create_vals(self, vals):
         vals = super(Form, self)._prepare_create_vals(vals)

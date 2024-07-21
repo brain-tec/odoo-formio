@@ -8,7 +8,10 @@ class Form(models.Model):
     _inherit = 'formio.form'
 
     crm_lead_id = fields.Many2one(
-        "crm.lead", string="CRM Lead", readonly=True, ondelete="cascade"
+        "crm.lead",
+        string="CRM Lead",
+        readonly=True,
+        ondelete="set null"
     )
 
     def _prepare_create_vals(self, vals):

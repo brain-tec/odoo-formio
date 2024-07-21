@@ -4,7 +4,7 @@
 {
     'name': 'Forms • Purchase',
     'summary': 'Forms integration with Purchase Orders',
-    'version': '0.1',
+    'version': '17.0.1.0.0',
     'license': 'LGPL-3',
     'author': 'Nova Code',
     'website': 'https://www.novaforms.app',

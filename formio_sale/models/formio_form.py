@@ -8,7 +8,10 @@ class Form(models.Model):
     _inherit = 'formio.form'
 
     sale_order_id = fields.Many2one(
-        "sale.order", string="Sale Order", readonly=True, ondelete="cascade"
+        "sale.order",
+        string="Sale Order",
+        readonly=True,
+        ondelete="set null"
     )
 
     def _prepare_create_vals(self, vals):
