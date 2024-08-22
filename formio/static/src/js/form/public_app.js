@@ -63,18 +63,18 @@ function app() {
                 }, 1000);
             }
         }
-    }
 
-    scrollParent() {
-        if (this.params.hasOwnProperty('scroll_into_view_selector')
-            && this.params.scroll_into_view_selector) {
-            const params = {
-                scroll_into_view_selector: this.params.scroll_into_view_selector
-            };
-            window.parent.postMessage({odooFormioMessage: 'formioScrollIntoView', params: params});
+        scrollParent() {
+            if (this.params.hasOwnProperty('scroll_into_view_selector')
+                && this.params.scroll_into_view_selector) {
+                const params = {
+                    scroll_into_view_selector: this.params.scroll_into_view_selector
+                };
+                window.parent.postMessage({odooFormioMessage: 'formioScrollIntoView', params: params});
+            }
         }
     }
-    
+
     protectComponent(App);
     const app = new App();
     mount(App, document.getElementById('formio_form_app'));

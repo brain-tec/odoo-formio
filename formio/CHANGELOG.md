@@ -1,5 +1,9 @@
 # Changelog
 
+## 17.0.6.0.3
+
+Fixes for public form (formio.form record) rendering.
+
 ## 17.0.6.0.2
 
 This fixes some issues introduced by version 17.0.6.0.0

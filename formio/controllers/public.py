@@ -92,9 +92,7 @@ class FormioPublicController(http.Controller):
         if form and form.submission_data:
             submission_data = {'submission': json.loads(form.submission_data)}
         else:
-            _logger.info('formio.form with UUID %s not found' % uuid)
-            res = {'error_message': _('The form was not found.')}
-            return request.make_json_response(res)
+            submission_data = {}
 
         # ETL Odoo data
         if form:
