@@ -21,7 +21,13 @@ $(document).ready(function() {
                 window.location = saveDraftDoneUrl;
             }
             else if (event.origin == baseUrl && msg == 'formioScrollIntoView' && scrollIntoViewSelector) {
-                document.querySelector(scrollIntoViewSelector, window.parent.parent.document).scrollIntoView();
+                let targetElement = document.querySelector(scrollIntoViewSelector);
+                if (!targetElement && window.parent && window.parent.parent) {
+                    targetElement = window.parent.parent.document.querySelector(scrollIntoViewSelector);
+                }
+                if (targetElement) {
+                    targetElement.scrollIntoView();
+                }
             }
             else if (event.origin == baseUrl && msg == 'formioScrollTop') {
                 window.parent.scrollTo(0, 0);

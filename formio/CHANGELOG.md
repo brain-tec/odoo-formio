@@ -1,5 +1,12 @@
 # Changelog
 
+## 17.0.6.0.4
+
+Fix for error in a public wizard form:\
+`TypeError: document.querySelector(...) is null`
+
+PR: https://github.com/novacode-nl/odoo-formio/pull/286
+
 ## 17.0.6.0.3
 
 Fixes for public form (formio.form record) rendering.
