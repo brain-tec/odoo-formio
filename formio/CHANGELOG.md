@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.0.6.0.5
+
+Improve the installation (`post_init_hook`) to auto install the latest stable formio.js (library) version from the GitHub tags API.
+Instead of relying (using) the system parameter (`ir.config_parameter`) `formio.default_version`, which isn't reliable due to the GitHub tags API (30 limit) results and leaves no installed formio.js (library) version.
+
 ## 17.0.6.0.4
 
 Fix for error in a public wizard form:\
