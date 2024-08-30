@@ -28,14 +28,21 @@ def post_init_hook(env):
         _logger.warning('\n'.join(msg_lines))
     try:
         Param = env['ir.config_parameter'].sudo()
-        param_version = Param.get_param('formio.default_version')
-        if param_version:
-            version_name = 'v%s' % param_version
-            domain = [('name', '=', version_name)]
-            version_github_tag = VersionGitHubTag.search(domain, limit=1)
-            if version_github_tag and len(version_github_tag) == 1:
+        version_prefix = Param.get_param('formio.versions_to_register').split(',')[0]
+        version_prefix_dot = '{v}.'.format(v=version_prefix)
+        version_like = '{v}%'.format(v=version_prefix)
+        if version_prefix:
+            domain = [('name', '=ilike', version_like)]
+            version_github_tags = VersionGitHubTag.search(domain).filtered(
+                lambda v: '-rc.' not in v.name and '-m.' not in v.name
+            )
+            if version_github_tags:
+                version_github_tag = version_github_tags.sorted(
+                    key=lambda v: v.name.replace(version_prefix_dot, '')
+                )[-1]
                 version_github_tag.action_download_install()
     except Exception as e:
+        version_name = version_github_tag.name
         msg_lines = [
             'Could not immediately download and install formio.js version %s.' % version_name,
             'Error: %s' % e,
