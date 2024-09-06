@@ -1,5 +1,9 @@
 # Changelog
 
+## 17.0.6.0.6
+
+Add Form Builder (server) action: Reset formio.js version to Dummy
+
 ## 17.0.6.0.5
 
 Improve the installation (`post_init_hook`) to auto install the latest stable formio.js (library) version from the GitHub tags API.
