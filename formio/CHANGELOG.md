@@ -1,5 +1,10 @@
 # Changelog
 
+## 16.0.15.0.3
+
+Fix `formio.form` method `_process_api_components` with `res.partner` creation.\
+Add DEPRECATION warning: `_process_api_components: partner creation will be removed from Odoo 18`
+
 ## 16.0.15.0.2
 
 Improve the installation (`post_init_hook`) to auto install the latest stable formio.js (library) version from the GitHub tags API.
