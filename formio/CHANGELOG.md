@@ -1,5 +1,11 @@
 # Changelog
 
+## 16.0.15.0.4
+Form Builder improvements:
+- Field active
+- Add search filter: Archived
+- Remove search filters: Not Portal, Not Public
+
 ## 16.0.15.0.3
 
 Fix `formio.form` method `_process_api_components` with `res.partner` creation.\
