@@ -184,7 +184,8 @@ class Form(models.Model):
                 partner = self.env['res.partner'].browse(vals.get('partner_id'))
                 if partner.tz:
                     vals['submission_timezone'] = partner.tz
-        self._after_write()
+        if not self._context.get('no_after_write'):
+            self._after_write()
         return res
 
     def _prepare_create_vals(self, vals):
@@ -247,19 +248,20 @@ class Form(models.Model):
         self.write(vals)
 
     def _process_api_components(self):
+        _logger.warning('DEPRECATION _process_api_components: partner creation will be removed from Odoo 18')
         if self.submission_data and self.builder_id.component_partner_email:
-            if self.submission_data.get(self.builder_id.component_partner_email):
-                partner_email = self.submission_data.get(self.builder_id.component_partner_email)
+            submission_data = json.loads(self.submission_data)
+            if submission_data.get(self.builder_id.component_partner_email):
+                partner_email = submission_data.get(self.builder_id.component_partner_email)
                 partner_model = self.env['res.partner']
                 partner = partner_model.search([('email', '=', partner_email)])
-
                 if not partner:
                     # Only create partner, don't update fields if exist already!
                     default_partner_vals = {'email': partner_email}
-                    partner_vals = self._prepare_partner_vals(self.submission_data, default_partner_vals)
+                    partner_vals = self._prepare_partner_vals(submission_data, default_partner_vals)
                     partner = partner_model.create(partner_vals)
                 if len(partner) == 1:
-                    self.write({'partner_id': partner.id})
+                    self.with_context(no_after_write=True).write({'partner_id': partner.id})
                     if self.builder_id.component_partner_add_follower:
                         self.message_subscribe(partner_ids=partner.ids)
                 elif len(partner) > 1:

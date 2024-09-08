@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.0.6.0.7
+
+Fix `formio.form` method `_process_api_components` with `res.partner` creation.\
+Add DEPRECATION warning: `_process_api_components: partner creation will be removed from Odoo 18`
+
 ## 17.0.6.0.6
 
 Add Form Builder (server) action: Reset formio.js version to Dummy
