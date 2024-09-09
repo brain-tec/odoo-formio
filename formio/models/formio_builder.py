@@ -46,6 +46,7 @@ class Builder(models.Model):
         "Title", required=True,
         help="The form title in the current language", tracking=True)
     description = fields.Text("Description")
+    active = fields.Boolean(default=True, tracking=True)
     formio_version_id = fields.Many2one(
         'formio.version', string='formio.js version', required=True,
         default=lambda self: self._default_formio_version_id(), tracking=True,

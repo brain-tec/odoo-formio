@@ -30,6 +30,7 @@ See LICENSE file for full licensing details. -->
                 <field name="write_date" optional="hide"/>
                 <field name="create_date" optional="hide"/>
                 <field name="forms" optional="show"/>
+                <field name="active" invisible="1"/>
             </tree>
         </field>
     </record>
@@ -89,6 +90,7 @@ See LICENSE file for full licensing details. -->
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_formio"
                                 type="object"
@@ -123,6 +125,7 @@ See LICENSE file for full licensing details. -->
                             <field name="version"/>
                             <field name="version_comment" attrs="{'required': [('version', '>', 1)]}"/>
                             <field name="parent_id" string="Parent Version"/>
+                            <field name="active" invisible="1"/>
                             <field name="is_schema_empty" invisible="1"/>
                         </group>
                         <group>
@@ -443,13 +446,16 @@ See LICENSE file for full licensing details. -->
                 <separator/>
                 <filter string="Portal" name="portal"
                         domain="[('portal', '=', True)]"/>
-                <filter string="Not Portal" name="not_portal"
-                        domain="[('portal', '=', False)]"/>
+                <filter string="Public" name="public"
+                        domain="[('public', '=', True)]"/>
                 <separator/>
                 <filter string="Wizard" name="wizard"
                         domain="[('wizard', '=', True)]"/>
                 <filter string="Not Wizard" name="not_portal"
                         domain="[('wizard', '=', False)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Name" name="name" domain="[]" context="{'group_by':'name'}"/>
                     <filter string="State" name="state" domain="[]" context="{'group_by':'state'}"/>
