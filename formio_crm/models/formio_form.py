@@ -10,9 +10,15 @@ class Form(models.Model):
     crm_lead_id = fields.Many2one(
         "crm.lead",
         string="CRM Lead",
-        readonly=True,
         ondelete="set null"
     )
+
+    def write(self, vals):
+        res = super().write(vals)
+        if "crm_lead_id" in vals:
+            for rec in self:
+                rec.res_name = rec.crm_lead_id.name
+        return res
 
     def _prepare_create_vals(self, vals):
         vals = super(Form, self)._prepare_create_vals(vals)
