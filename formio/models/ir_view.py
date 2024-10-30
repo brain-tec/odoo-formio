@@ -15,6 +15,12 @@ class IrUIView(models.Model):
 
     type = fields.Selection(selection_add=FORMIO_VIEW_TYPES)
 
+    def _get_view_info(self):
+        return {
+            'formio_builder': {'icon': 'fa fa-rocket'},
+            'formio_form': {'icon': 'fa fa-rocket'}
+        } | super()._get_view_info()
+
 
 class IrActionsActWindowView(models.Model):
     _inherit = 'ir.actions.act_window.view'

@@ -4,16 +4,16 @@ See LICENSE file for full licensing details. -->
 
 <odoo>
     <record id="view_formio_builder_translation_tree" model="ir.ui.view">
-        <field name="name">formio.builder.translation.tree</field>
+        <field name="name">formio.builder.translation.list</field>
         <field name="model">formio.builder.translation</field>
         <field name="arch" type="xml">
-            <tree string="Translations" editable="top">
+            <list string="Translations" editable="top">
                 <field name="builder_id" optional="show"/>
                 <field name="lang_id"/>
                 <field name="source_property"/>
                 <field name="source"/>
                 <field name="value"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -52,7 +52,7 @@ See LICENSE file for full licensing details. -->
     <record id="action_formio_builder_translation" model="ir.actions.act_window">
         <field name="name">Translations</field>
         <field name="res_model">formio.builder.translation</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_formio_builder_translation_tree"/>
         <field name="search_view_id" ref="view_formio_builder_translation_search"/>
     </record>

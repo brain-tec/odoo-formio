@@ -67,7 +67,7 @@ class VersionGitHubChecker(models.TransientModel):
         action = {
             'name': _('Versions GitHub tags'),
             'type': 'ir.actions.act_window',
-            "views": [[False, "tree"], [False, "form"]],
+            "views": [[False, "list"], [False, "form"]],
             'view_id': self.env.ref('formio.view_formio_version_github_tag_tree').id,
             'res_model': 'formio.version.github.tag',
         }

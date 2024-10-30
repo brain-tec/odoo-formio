@@ -496,8 +496,8 @@ class Builder(models.Model):
             'name': 'Server Actions',
             'type': 'ir.actions.act_window',
             'res_model': 'ir.actions.server',
-            'view_mode': 'tree,form',
-            'views': [(tree_view.id, 'tree'), (False, 'form')],
+            'view_mode': 'list,form',
+            'views': [(tree_view.id, 'list'), (False, 'form')],
             'target': 'current',
             'domain': [('formio_builder_ids', '=', [self.id])],
             "context": {
@@ -513,8 +513,8 @@ class Builder(models.Model):
             'name': 'Forms',
             'type': 'ir.actions.act_window',
             'res_model': 'formio.form',
-            'view_mode': 'tree,form',
-            'views': [(forms_view.id, 'tree'), (False, 'form')],
+            'view_mode': 'list,form',
+            'views': [(forms_view.id, 'list'), (False, 'form')],
             'target': 'current',
             'domain': [('builder_id', '=', self.id)],
             'context': {}
@@ -581,7 +581,7 @@ class Builder(models.Model):
             "type": "ir.actions.act_window",
             "res_model": "formio.builder",
             "view_type": "form",
-            "view_mode": "form, tree",
+            "view_mode": "form, list",
             "views": [
                 [form_view.id, "form"],
                 [tree_view.id, "tree"],
