@@ -22,8 +22,8 @@ See LICENSE file for full licensing details. -->
                                        readonly="is_locked == True"
                                        nolabel="1" colspan="2">
                                     <tree editable="bottom">
-                                        <field name="builder_id" invisible="1"/>
-                                        <field name="builder_report_ids" invisible="1"/>
+                                        <field name="builder_id" column_invisible="1"/>
+                                        <field name="builder_report_ids" column_invisible="1"/>
                                         <field name="sequence" widget="handle"/>
                                         <field name="ir_actions_report_id" string="Report"
                                                domain="[('id', 'not in', builder_report_ids), ('model', '=', 'formio.form'), ('report_type', '=', 'qweb-pdf')]"/>
@@ -42,7 +42,7 @@ See LICENSE file for full licensing details. -->
                                        nolabel="1"
                                        colspan="2">
                                     <tree editable="bottom">
-                                        <field name="builder_id" invisible="1"/>
+                                        <field name="builder_id" column_invisible="1"/>
                                         <field name="ir_actions_report_id" string="Report"/>
                                         <field name="show_components_not_implemented"/>
                                     </tree>

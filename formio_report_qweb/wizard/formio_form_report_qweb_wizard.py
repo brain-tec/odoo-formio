@@ -55,7 +55,7 @@ class FormReportQwebWizard(models.TransientModel):
             formio_form = line.wizard_id.formio_form_id
             formio_forms |= formio_form
             report = line.ir_actions_report_id
-            content, report_type = report._render([formio_form.id])
+            content, report_type = report._render(report.report_name, [formio_form.id])
 
             if report_type == 'pdf':
                 pdf_content_stream = io.BytesIO(content)
@@ -64,8 +64,8 @@ class FormReportQwebWizard(models.TransientModel):
 
         if streams:
             result = IrReport._merge_pdfs(streams)
+            vals = {'datas': base64.b64encode(result.getvalue())}
             close_streams(streams)
-            vals = {'datas': base64.b64encode(result)}
 
             current_datetime = fields.Datetime.context_timestamp(self, fields.Datetime.now())
             # colons ':' get converted to whitespace, hence convert to dashes '-'
