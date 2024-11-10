@@ -8,16 +8,14 @@
         <field name="model">formio.form.report.qweb.wizard</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-	    <form string="Report">
+            <form string="Report">
                 <field name="print_count" invisible="1"/>
-		<group colspan="2">
-                    <field name="wizard_line_ids" nolabel="1">
-                        <tree editable="bottom" create="false" delete="false">
-                            <field name="print_report" widget="boolean_toggle"/>
-                            <field name="ir_actions_report_id" readonly="1"/>
-                        </tree>
-                    </field>
-                </group>
+                <field name="wizard_line_ids" nolabel="1">
+                    <tree editable="bottom" create="false" delete="false">
+                        <field name="print_report" widget="boolean_toggle"/>
+                        <field name="ir_actions_report_id" readonly="1"/>
+                    </tree>
+                </field>
                 <group>
                     <field name="save_attachment"/>
                 </group>
@@ -29,13 +27,13 @@
                         class="btn-primary"
                         invisible="print_count == 0"/>
                     <button
-                        name="action_save_attachment"
-                        string="Save as Attachment" type="object"
-                        class="btn-primary"
-                        invisible="print_count == 0 or save_attachment == False"/>
+                       name="action_save_attachment"
+                       string="Save as Attachment" type="object"
+                       class="btn-primary"
+                       invisible="print_count == 0 or save_attachment == False"/>
                     <button special="cancel" string="Close"/>
                 </footer>
-	    </form>
+            </form>
         </field>
     </record>
 </odoo>
