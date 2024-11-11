@@ -465,7 +465,7 @@ class Form(models.Model):
             template_id = self.env.ref('formio.mail_invitation_internal_user').id
         ctx = dict(
             default_composition_mode='comment',
-            default_res_id=self.id,
+            default_res_ids=self.ids,
             default_model='formio.form',
             default_use_template=bool(template_id),
             default_template_id=template_id,
@@ -484,19 +484,6 @@ class Form(models.Model):
     @api.model
     def _default_uuid(self):
         return str(uuid.uuid4())
-
-    # @api.onchange('builder_id')
-    # def _onchange_builder_domain(self):
-    #     domain = [
-    #         '|', '&',
-    #         ('state', '=', BUILDER_STATE_CURRENT),
-    #         ('res_model_id', '=', False),
-    #         '&', ('state', '=', BUILDER_STATE_DRAFT), ('test_draft', '=', True)
-    #     ]
-    #     res = {
-    #         'domain': {'builder_id': domain}
-    #     }
-    #     return res
 
     @api.onchange('builder_id')
     def _onchange_builder(self):
