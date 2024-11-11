@@ -1,5 +1,4 @@
-/** @odoo-module **/
-
+import { router } from "@web/core/browser/router";
 import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { Layout } from "@web/search/layout";
@@ -14,7 +13,7 @@ import { Component, useEffect, useState } from "@odoo/owl";
 
 export class FormController extends Component {
     setup() {
-        this.router = useService("router");
+        this.router = router;
         this.orm = useService("orm");
         this.state = useState({
             isDisabled: false,
@@ -35,7 +34,7 @@ export class FormController extends Component {
             this.model.config.activeFields = activeFields;
             this.model.config.fields = fields;
         };
-        
+
         this.model = useState(useModel(this.props.Model, this.modelParams, { beforeFirstLoad }));
         this.display = { ...this.props.display };
 
@@ -55,7 +54,7 @@ export class FormController extends Component {
             }
         }, false);
     }
-    
+
     updateURL() {
         this.router.pushState({ id: this.model.root.resId || undefined });
     }
@@ -111,7 +110,7 @@ export const FormView = {
     Model: RelationalModel,
     ArchParser: FormArchParser,
     Compiler: FormCompiler,
-    
+
     props: (genericProps, view) => {
         const { ArchParser } = view;
         const { arch, relatedModels, resModel } = genericProps;

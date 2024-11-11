@@ -1,25 +1,20 @@
-/** @odoo-module **/
-
+import { router } from "@web/core/browser/router";
 import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { Layout } from "@web/search/layout";
 import { useModel } from "@web/model/model";
 import { RelationalModel } from "@web/model/relational_model/relational_model";
 import { extractFieldsFromArchInfo } from "@web/model/relational_model/utils";
-// import { formView } from "@web/views/form/form_view";
 import { standardViewProps } from "@web/views/standard_view_props";
 import { ViewButton } from "@web/views/view_button/view_button";
 import { FormArchParser } from "@web/views/form/form_arch_parser";
 import { FormCompiler } from "@web/views/form/form_compiler";
 import { Component, useEffect, useState } from "@odoo/owl";
 
-// if (formView.icon === undefined) {
-//     formView.icon = "fa fa-file";
-// }
 
 export class BuilderController extends Component {
     setup() {
-        this.router = useService("router");
+        this.router = router;
         this.orm = useService("orm");
         this.state = useState({
             isDisabled: false,
@@ -49,7 +44,7 @@ export class BuilderController extends Component {
             this.updateURL();
         });
     }
-    
+
     updateURL() {
         this.router.pushState({ id: this.model.root.resId || undefined });
     }
@@ -105,7 +100,7 @@ export const BuilderView = {
     ArchParser: FormArchParser,
     Model: RelationalModel,
     Compiler: FormCompiler,
-    
+
     props: (genericProps, view) => {
         const { ArchParser } = view;
         const { arch, relatedModels, resModel } = genericProps;
