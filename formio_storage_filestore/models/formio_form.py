@@ -1,4 +1,4 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 from odoo import models
@@ -7,17 +7,19 @@ from odoo import models
 class Form(models.Model):
     _inherit = 'formio.form'
 
-    def _after_create(self):
-        super()._after_create()
+    def after_submit(self):
+        res = super().after_submit()
         for rec in self:
             if rec.submission_data:
-                rec._process_storage_filestore_ir_attachments('create')
+                rec._process_storage_filestore_ir_attachments()
+        return res
 
-    def _after_write(self):
-        super()._after_write()
+    def after_save_draft(self):
+        res = super().after_save_draft()
         for rec in self:
             if rec.submission_data:
-                rec._process_storage_filestore_ir_attachments('write')
+                rec._process_storage_filestore_ir_attachments()
+        return res
 
     def unlink(self):
         """
@@ -32,7 +34,7 @@ class Form(models.Model):
         attachments.write({'formio_storage_filestore_user_id': False})
         return super(Form, self).unlink()
 
-    def _process_storage_filestore_ir_attachments(self, mode):
+    def _process_storage_filestore_ir_attachments(self):
         attach_names = []
         for key, component in self._formio.input_components.items():
             if component.type == 'datagrid':
@@ -42,6 +44,9 @@ class Form(models.Model):
             else:
                 attach_names += self._get_component_file_names(component)
         # update ir.attachment (link with formio.form)
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.critical(attach_names)
         if attach_names:
             domain = [
                 ('name', 'in', attach_names),
@@ -55,17 +60,17 @@ class Form(models.Model):
                 }
                 attach.write(vals)
         # delete ir.attachment (deleted files)
-        if mode == 'write':
-            domain = [
-                ('res_model', '=', 'formio.form'),
-                ('res_id', '=', self.id),
-                ('formio_storage_filestore_user_id', '!=', False)
-            ]
-            if attach_names:
-                domain.append(('name', 'not in', attach_names))
-            self.env['ir.attachment'].sudo().search(domain).with_context(
-                formio_storage_filestore_force_unlink_attachment=True
-            ).unlink()
+        domain = [
+            ('res_model', '=', 'formio.form'),
+            ('res_id', '=', self.id),
+            ('formio_storage_filestore_user_id', '!=', False)
+        ]
+        if attach_names:
+            domain.append(('name', 'not in', attach_names))
+        _logger.critical(domain)
+        self.env['ir.attachment'].sudo().search(domain).with_context(
+            formio_storage_filestore_force_unlink_attachment=True
+        ).unlink()
 
     def _get_component_file_names(self, component_obj):
         names = []
