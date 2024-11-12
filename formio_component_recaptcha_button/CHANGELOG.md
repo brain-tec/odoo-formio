@@ -1,6 +1,5 @@
 # Changelog
 
-## 17.0.1.0
+## 18.0.1.0
 
-Initial release.
-
+Initial 18.0 release.

@@ -4,17 +4,17 @@ See LICENSE file for full licensing details. -->
 
 <odoo>
     <record id="view_formio_version_github_tag_tree" model="ir.ui.view">
-        <field name="name">formio.version.github.tag.tree</field>
+        <field name="name">formio.version.github.tag.list</field>
         <field name="model">formio.version.github.tag</field>
         <field name="arch" type="xml">
-            <tree create="0" edit="0" delete="0" decoration-success="state == 'installed'">
+            <list create="0" edit="0" delete="0" decoration-success="state == 'installed'">
                 <field name="name"/>
                 <field name="state"/>
                 <field name="create_date" optional="show"/>
                 <field name="install_date" optional="show"/>
                 <field name="changelog_url" widget="url"/>
                 <field name="archive_url" widget="url" optional="hide"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -51,11 +51,7 @@ See LICENSE file for full licensing details. -->
                         </group>
                     </group>
                 </sheet>
-                <div class="oe_chatter" groups="formio.group_formio_admin">
-                    <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="activity_ids" widget="mail_activity"/>
-                    <field name="message_ids" widget="mail_thread"/>
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -81,7 +77,7 @@ See LICENSE file for full licensing details. -->
     <record id="action_formio_version_github_tag" model="ir.actions.act_window">
         <field name="name">formio.js versions (GitHub tags)</field>
         <field name="res_model">formio.version.github.tag</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_formio_version_github_tag_tree"/>
     </record>
 </odoo>

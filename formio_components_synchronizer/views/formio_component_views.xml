@@ -4,10 +4,10 @@ See LICENSE file for full licensing details. -->
 
 <odoo>
     <record id="view_formio_component_tree" model="ir.ui.view">
-        <field name="name">formio.component.tree</field>
+        <field name="name">formio.component.list</field>
         <field name="model">formio.component</field>
         <field name="arch" type="xml">
-            <tree string="Component" create="false">
+            <list string="Component" create="false">
                 <field name="builder_id"/>
                 <field name="builder_title" optional="hide"/>
                 <field name="builder_name" optional="hide"/>
@@ -32,15 +32,15 @@ See LICENSE file for full licensing details. -->
                 <field name="custom_conditional" optional="show"/>
                 <field name="templates" optional="hide"/>
                 <field name="logic" optional="show"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <record id="view_formio_builder_component_tree" model="ir.ui.view">
-        <field name="name">formio.builder.component.tree</field>
+        <field name="name">formio.builder.component.list</field>
         <field name="model">formio.component</field>
         <field name="arch" type="xml">
-            <tree string="Component" create="false">
+            <list string="Component" create="false">
                 <field name="sequence" optional="hide"/>
                 <field name="label" optional="hide"/>
                 <field name="key" optional="hide"/>
@@ -61,7 +61,7 @@ See LICENSE file for full licensing details. -->
                 <field name="custom_conditional" optional="hide"/>
                 <field name="templates" optional="hide"/>
                 <field name="logic" optional="hide"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -180,7 +180,7 @@ See LICENSE file for full licensing details. -->
                             ("custom_conditional", "=", "{&apos;show&apos;: None, &apos;when&apos;: None, &apos;eq&apos;: &apos;&apos;}"),
                             ("custom_conditional", "=", "{&apos;show&apos;: None, &apos;when&apos;: None, &apos;eq&apos;: &apos;&apos;, &apos;json&apos;: &apos;&apos;}")
                             ]'
-                />                
+                />
                 <group expand="0" string="Group By">
                     <filter string="Form Builder" name="group_builder_id" domain="[]" context="{'group_by':'builder_id'}"/>
                     <filter string="Type" name="group_type" domain="[]" context="{'group_by':'type'}"/>
@@ -287,14 +287,14 @@ See LICENSE file for full licensing details. -->
     <record id="action_formio_component" model="ir.actions.act_window">
         <field name="name">Components</field>
         <field name="res_model">formio.component</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_formio_component_tree"/>
     </record>
 
     <record id="action_formio_builder_component" model="ir.actions.act_window">
         <field name="name">Components</field>
         <field name="res_model">formio.component</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_formio_builder_component_tree"/>
     </record>
 </odoo>

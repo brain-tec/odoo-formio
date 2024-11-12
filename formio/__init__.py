@@ -17,6 +17,7 @@ _logger = logging.getLogger(__name__)
 
 def post_init_hook(env):
     VersionGitHubTag = env['formio.version.github.tag']
+    Param = env['ir.config_parameter'].sudo()
     try:
         VersionGitHubTag.check_and_register_available_versions()
     except Exception as e:
@@ -34,6 +35,7 @@ def post_init_hook(env):
         if version_prefix:
             domain = [('name', '=ilike', version_like)]
             version_github_tags = VersionGitHubTag.search(domain).filtered(
+                # exclude release candidate and milestone versions
                 lambda v: '-rc.' not in v.name and '-m.' not in v.name
             )
             if version_github_tags:
@@ -41,6 +43,7 @@ def post_init_hook(env):
                     key=lambda v: v.name.replace(version_prefix_dot, '')
                 )[-1]
                 version_github_tag.action_download_install()
+                Param.set_param('formio.default_version', version_github_tag.formio_version_id.name)
     except Exception as e:
         version_name = version_github_tag.name
         msg_lines = [

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- Copyright Nova Code (http://www.novacode.nl)
+<!-- Copyright Nova Code (https://www.novacode.nl)
 License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html) -->
 
 <odoo>
@@ -12,7 +12,6 @@ License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html) -->
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
-            <field name="numbercall">-1</field>
         </record>
     </data>
 </odoo>

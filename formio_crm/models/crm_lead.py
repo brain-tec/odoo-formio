@@ -1,4 +1,4 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 from odoo import api, fields, models, _
@@ -50,7 +50,7 @@ class CrmLead(models.Model):
             'domain': [('res_id', '=', self.id), ('res_model_id', '=', res_model_id)],
             'context': {'default_res_id': self.id},
             'view_type': 'form',
-            'view_mode': 'kanban,tree,form',
+            'view_mode': 'kanban,list,form',
             'res_model': 'formio.form',
             'view_id': False,
         }

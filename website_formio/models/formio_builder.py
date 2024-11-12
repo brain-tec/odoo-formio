@@ -1,4 +1,4 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 from odoo import api, fields, models
@@ -20,9 +20,6 @@ class Builder(models.Model):
     public_save_draft_done_page_id = fields.Many2one(
         'website.page', domain=[('is_published', '=', True), ('url', '!=', '/')],
         string='Public Save-Draft Done Page', tracking=True)
-    formio_website_page_ids = fields.One2many(
-        "formio.website.page", string="Website Pages", compute='_compute_website_pages'
-    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -63,12 +60,6 @@ class Builder(models.Model):
             public_submit_done_page = self.env['website.page'].browse(public_submit_done_page_id)
             vals['public_submit_done_url'] = public_submit_done_page.url
         return super(Builder, self).write(vals)
-
-    def _compute_website_pages(self):
-        pages = self.env['formio.website.page'].search([('formio_builder_id', 'in', self.ids)])
-        for r in self:
-            builder_pages = pages.filtered(lambda p: p.formio_builder_id.id == r.id)
-            r.formio_website_page_ids = [(6, 0, builder_pages.ids)]
 
     @api.onchange('portal_save_draft_done_page_id')
     def _onchange_portal_save_draft_done_page(self):

@@ -63,11 +63,11 @@ License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html) -->
                                  class="w-100">
                             <div class="row">
                                 <field name="formio_default_asset_css_ids" class="w-100">
-                                    <tree editable="bottom">
+                                    <list editable="bottom">
                                         <field name="url" widget="url"/>
                                         <field name="active"/>
                                         <field name="nodelete"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </div>
                         </setting>

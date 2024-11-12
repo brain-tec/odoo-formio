@@ -491,13 +491,13 @@ class Builder(models.Model):
         }
 
     def action_view_server_actions(self):
-        tree_view = self.env.ref('formio.view_server_action_tree')
+        list_view = self.env.ref('formio.view_server_action_tree')
         return {
             'name': 'Server Actions',
             'type': 'ir.actions.act_window',
             'res_model': 'ir.actions.server',
-            'view_mode': 'tree,form',
-            'views': [(tree_view.id, 'tree'), (False, 'form')],
+            'view_mode': 'list,form',
+            'views': [(list_view.id, 'list'), (False, 'form')],
             'target': 'current',
             'domain': [('formio_builder_ids', '=', [self.id])],
             "context": {
@@ -513,8 +513,8 @@ class Builder(models.Model):
             'name': 'Forms',
             'type': 'ir.actions.act_window',
             'res_model': 'formio.form',
-            'view_mode': 'tree,form',
-            'views': [(forms_view.id, 'tree'), (False, 'form')],
+            'view_mode': 'list,form',
+            'views': [(forms_view.id, 'list'), (False, 'form')],
             'target': 'current',
             'domain': [('builder_id', '=', self.id)],
             'context': {}
@@ -574,17 +574,16 @@ class Builder(models.Model):
         res = self.copy_as_new_version()
 
         form_view = self.env.ref('formio.view_formio_builder_form')
-        tree_view = self.env.ref('formio.view_formio_builder_tree')
+        list_view = self.env.ref('formio.view_formio_builder_tree')
 
         return {
             "name": self.name,
             "type": "ir.actions.act_window",
             "res_model": "formio.builder",
-            "view_type": "form",
-            "view_mode": "form, tree",
+            "view_mode": "form, list",
             "views": [
                 [form_view.id, "form"],
-                [tree_view.id, "tree"],
+                [list_view.id, "list"],
             ],
             "target": "current",
             "res_id": res.id,

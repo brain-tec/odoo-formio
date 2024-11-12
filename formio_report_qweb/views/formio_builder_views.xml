@@ -21,7 +21,7 @@ See LICENSE file for full licensing details. -->
                                        context="{'default_builder_id': id}"
                                        readonly="is_locked == True"
                                        nolabel="1" colspan="2">
-                                    <tree editable="bottom">
+                                    <list editable="bottom">
                                         <field name="builder_id" column_invisible="1"/>
                                         <field name="builder_report_ids" column_invisible="1"/>
                                         <field name="sequence" widget="handle"/>
@@ -29,7 +29,7 @@ See LICENSE file for full licensing details. -->
                                                domain="[('id', 'not in', builder_report_ids), ('model', '=', 'formio.form'), ('report_type', '=', 'qweb-pdf')]"/>
                                         <field name="report_type" string="Type"/>
                                         <field name="default_enable"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </group>
                             <group name="reports_config" string="Reports Configuration">
@@ -41,11 +41,11 @@ See LICENSE file for full licensing details. -->
                                        readonly="is_locked == True"
                                        nolabel="1"
                                        colspan="2">
-                                    <tree editable="bottom">
+                                    <list editable="bottom">
                                         <field name="builder_id" column_invisible="1"/>
                                         <field name="ir_actions_report_id" string="Report"/>
                                         <field name="show_components_not_implemented"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </group>
                         </page>
