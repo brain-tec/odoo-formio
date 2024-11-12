@@ -32,11 +32,7 @@ class FormioCustomerPortal(CustomerPortal):
         values = super()._prepare_home_portal_values(counters)
         if 'form_count' in counters:
             domain = [('user_id', '=', request.env.user.id), ('builder_id.portal', '=', True)]
-            values['form_count'] = (
-                request.env['formio.form'].search_count(domain)
-                if request.env['formio.form'].check_access_rights('read', raise_exception=False)
-                else 0
-            )
+            values['form_count'] = request.env['formio.form'].search_count(domain)
         return values
 
     def _formio_form_prepare_portal_layout_values(self, **kwargs):

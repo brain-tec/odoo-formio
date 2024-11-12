@@ -1,4 +1,4 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 import json
@@ -165,7 +165,6 @@ class Form(models.Model):
         for vals in vals_list:
             vals = self._prepare_create_vals(vals)
         res = super().create(vals_list)
-        res._after_create()
         return res
 
     def write(self, vals):
@@ -184,8 +183,6 @@ class Form(models.Model):
                 partner = self.env['res.partner'].browse(vals.get('partner_id'))
                 if partner.tz:
                     vals['submission_timezone'] = partner.tz
-        if not self._context.get('no_after_write'):
-            self._after_write()
         return res
 
     def _prepare_create_vals(self, vals):
@@ -228,14 +225,6 @@ class Form(models.Model):
                 vals['submission_timezone'] = self.env.user.partner_id.tz
         return vals
 
-    def _after_create(self):
-        for rec in self:
-            rec._process_api_components()
-
-    def _after_write(self):
-        for rec in self:
-            rec._process_api_components()
-
     def _clear_res_fields(self):
         vals = {
             'initial_res_id': False,
@@ -246,26 +235,6 @@ class Form(models.Model):
             'res_partner_id': False
         }
         self.write(vals)
-
-    def _process_api_components(self):
-        _logger.warning('DEPRECATION _process_api_components: partner creation will be removed from Odoo 18')
-        if self.submission_data and self.builder_id.component_partner_email:
-            submission_data = json.loads(self.submission_data)
-            if submission_data.get(self.builder_id.component_partner_email):
-                partner_email = submission_data.get(self.builder_id.component_partner_email)
-                partner_model = self.env['res.partner']
-                partner = partner_model.search([('email', '=', partner_email)])
-                if not partner:
-                    # Only create partner, don't update fields if exist already!
-                    default_partner_vals = {'email': partner_email}
-                    partner_vals = self._prepare_partner_vals(submission_data, default_partner_vals)
-                    partner = partner_model.create(partner_vals)
-                if len(partner) == 1:
-                    self.with_context(no_after_write=True).write({'partner_id': partner.id})
-                    if self.builder_id.component_partner_add_follower:
-                        self.message_subscribe(partner_ids=partner.ids)
-                elif len(partner) > 1:
-                    self.mail_activity_partner_linking(partner_email, record=self)
 
     def _prepare_partner_vals(self, submission_data, partner_vals):
         if submission_data.get(self.builder_id.component_partner_name):
@@ -573,16 +542,13 @@ class Form(models.Model):
     def get_form(self, uuid, mode):
         """ Verifies access to form and return form or False. """
 
-        if not self.env['formio.form'].check_access_rights(mode, False):
-            return False
-
-        # check access rules
         form = self.sudo().search([('uuid', '=', uuid)], limit=1)
         if form:
             try:
                 # Catch the deny access exception
-                form.check_access_rule(mode)
+                form.check_access(mode)
             except AccessError as e:
+                _logger.info(e)
                 return False
 
         # portal user

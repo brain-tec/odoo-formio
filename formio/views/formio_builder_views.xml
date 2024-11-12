@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright Nova Code (http://www.novacode.nl)
+<!-- Copyright Nova Code (https://www.novacode.nl)
 See LICENSE file for full licensing details. -->
 
 <odoo>
@@ -256,7 +256,7 @@ See LICENSE file for full licensing details. -->
                                 <group name="public_url" colspan="2" invisible="public_url == False">
                                     <field name="public_url" widget="CopyClipboardChar" style="font-size: 1.0em;"/>
                                     <div class="text-muted mb-4" colspan="2">
-                                        <i class="fa fa-info-circle" title="info"/> Public URL: Public Form for this form builder version
+                                        <i class="fa fa-info-circle" title="info"/> Public URL: Public Form for this form builder version in state Current
                                     </div>
                                 </group>
                                 <group name="general" string="General">
@@ -487,13 +487,7 @@ See LICENSE file for full licensing details. -->
     <record id="action_formio_builder" model="ir.actions.act_window">
         <field name="name">Form Builders</field>
         <field name="res_model">formio.builder</field>
-        <!-- TODO when Odoo (v.16) has fixed the Action Service
-             implementation!
-             Currently it doesn't allow to hide search and obtain breadcrumbs.
-             Path: odoo/addons/web/static/src/webclient/actions/action_service.js
-        -->
         <field name="view_mode">list,form,formio_builder</field>
-        <!-- <field name="view_mode">list,form</field> -->
     </record>
 
     <record id="action_formio_builder_view_tree" model="ir.actions.act_window.view">
