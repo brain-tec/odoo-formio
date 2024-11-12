@@ -1,9 +1,5 @@
 # Changelog
 
-## 17.0.1.1
+## 18.0.1.0
 
-Remove non-migrated website snippet.
-
-## 17.0.1.0
-
-Initial release.
+Initial 18.0 release.

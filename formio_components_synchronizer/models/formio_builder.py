@@ -1,4 +1,4 @@
-# Copyright Nova Code (http://www.novacode.nl)
+# Copyright Nova Code (https://www.novacode.nl)
 # See LICENSE file for full licensing details.
 
 import json
@@ -38,7 +38,7 @@ class FormioBuilder(models.Model):
         return res
 
     def action_view_components(self):
-        tree_view = self.env.ref(
+        list_view = self.env.ref(
             "formio_components_synchronizer.view_formio_builder_component_tree"
         )
         search_view = self.env.ref(
@@ -50,7 +50,7 @@ class FormioBuilder(models.Model):
             "res_model": "formio.component",
             "domain": [("builder_id", "=", self.id)],
             "views": [
-                [tree_view.id, "tree"],
+                [list_view.id, "list"],
                 [False, "form"],
                 [search_view.id, "search"],
             ],

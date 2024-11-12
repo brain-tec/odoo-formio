@@ -4,7 +4,7 @@
 {
     'name': 'Forms • reCAPTCHA Component',
     'summary': 'Drag & drop a reCAPTCHA component with (server)verification on a Form.',
-    'version': '0.1',
+    'version': '1.0',
     'license': 'LGPL-3',
     'author': 'Nova Code',
     'website': 'https://www.novaforms.app',

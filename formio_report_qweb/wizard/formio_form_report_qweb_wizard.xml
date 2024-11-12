@@ -11,10 +11,10 @@
             <form string="Report">
                 <field name="print_count" invisible="1"/>
                 <field name="wizard_line_ids" nolabel="1">
-                    <tree editable="bottom" create="false" delete="false">
+                    <list editable="bottom" create="false" delete="false">
                         <field name="print_report" widget="boolean_toggle"/>
                         <field name="ir_actions_report_id" readonly="1"/>
-                    </tree>
+                    </list>
                 </field>
                 <group>
                     <field name="save_attachment"/>
