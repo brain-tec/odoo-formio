@@ -180,7 +180,7 @@
                 "components": [
                     {
                         "key": "dataSrc",
-                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/17.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Select Boxes values and labels, through a backend (Python) programming API available in the Form Builder."
+                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/18.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Select Boxes values and labels, through a backend (Python) programming API available in the Form Builder."
                     },
                     {
                         "key": "persistent",
@@ -224,7 +224,7 @@
                 "components": [
                     {
                         "key": "dataSrc",
-                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/17.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Select values and labels, through a backend (Python) programming API available in the Form Builder."
+                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/18.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Select values and labels, through a backend (Python) programming API available in the Form Builder."
                     },
                     {
                         "key": "persistent",
@@ -259,7 +259,7 @@
                 "components": [
                     {
                         "key": "dataSrc",
-                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/17.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Radio values and labels, through a backend (Python) programming API available in the Form Builder."
+                        "description": "When the Data Source Type is URL, the &lt;a href='https://apps.odoo.com/apps/modules/18.0/formio_components_api/' target='_blank'&gt;formio_components_api&lt;/a&gt; module (getData and domain API) can fetch, filter and load data/records as Radio values and labels, through a backend (Python) programming API available in the Form Builder."
                     },
                     {
                         "key": "persistent",
@@ -1049,7 +1049,7 @@
                     {
                         "key": "storage",
                         "defaultValue": "url",
-                        "description": "It is highly recommended to use the &lt;a href='https://apps.odoo.com/apps/modules/17.0/formio_storage_filestore/' target='_blank'&gt;formio_storage_filestore&lt;/a&gt; module. The module can save uploaded files as form attachments (in the filestore) instead of base64 in the form submission record. This applies when the Storage is URL."
+                        "description": "It is highly recommended to use the &lt;a href='https://apps.odoo.com/apps/modules/18.0/formio_storage_filestore/' target='_blank'&gt;formio_storage_filestore&lt;/a&gt; module. The module can save uploaded files as form attachments (in the filestore) instead of base64 in the form submission record. This applies when the Storage is URL."
                     }
                 ]
             },
