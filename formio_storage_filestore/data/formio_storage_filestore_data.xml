@@ -16,7 +16,7 @@ See LICENSE file for full licensing details. -->
                     {
                         "key": "storage",
                         "defaultValue": "url",
-                        "description": "It is highly recommended to use the &lt;a href='https://apps.odoo.com/apps/modules/17.0/formio_storage_filestore/' target='_blank'&gt;formio_storage_filestore&lt;/a&gt; module. The module can save uploaded files as form attachments (in the filestore) instead of base64 in the form submission record."
+                        "description": "It is highly recommended to use the &lt;a href='https://apps.odoo.com/apps/modules/18.0/formio_storage_filestore/' target='_blank'&gt;formio_storage_filestore&lt;/a&gt; module. The module can save uploaded files as form attachments (in the filestore) instead of base64 in the form submission record."
                     },
                     {"key": "url", "defaultValue": "/formio/storage/filestore"}
                 ]
