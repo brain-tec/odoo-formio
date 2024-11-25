@@ -197,10 +197,10 @@ export class OdooFormioForm extends Component {
                         return new Promise((resolve) => {
                             $.jsonRpc.request(apiUrl, 'call', {'data': data}).then(function(result) {
                                 form.submission = {'data': JSON.parse(result)};
-                            });
-                            overlayTimerPromise.then(() => {
-                                self.hideOverlay();
-                                resolve();
+                                overlayTimerPromise.then(() => {
+                                    self.hideOverlay();
+                                    resolve();
+                                });
                             });
                         });
                     }
@@ -208,8 +208,8 @@ export class OdooFormioForm extends Component {
                         return new Promise((resolve) => {
                             $.jsonRpc.request(apiUrl, 'call', {'data': data}).then(function(result) {
                                 form.submission = {'data': JSON.parse(result)};
+                                resolve();
                             });
-                            resolve();
                         });
                     }
                 }
