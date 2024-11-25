@@ -107,7 +107,7 @@ See LICENSE file for full licensing details. -->
                 <t t-if="builder">
                     <h3 t-if="builder.show_form_title" class="formio_form_title"><span name="title" t-esc="builder.title"/></h3>
                 </t>
-                
+
                 <t t-if="len(languages) > 1">
                     <div class="formio_languages">
                         <t t-foreach="languages" t-as="lang">
@@ -119,7 +119,7 @@ See LICENSE file for full licensing details. -->
                 </t>
                 <!-- form shall be mounted here -->
                 <div id="formio_form_app">
-                    <div id="formio_form_loading"></div>
+                    <div id="formio_form_loading_overlay"></div>
                 </div>
                 <div t-if="form and form.show_uuid" class="float-right">
                     <small class="text-muted">UUID: <span t-esc="form.uuid"/></small>
