@@ -67,6 +67,20 @@ export class OdooFormioForm extends Component {
         }
     }
 
+    hideOverlay() {
+        let loadingOverlay = document.getElementById('formio_form_loading_overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    }
+
+    showOverlay() {
+        let loadingOverlay = document.getElementById('formio_form_loading_overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'block';
+        }
+    }
+
     wizardStateChange (form, submission) {
         this.resetParentIFrame();
         // readOnly check also applies in server endpoint
@@ -77,12 +91,16 @@ export class OdooFormioForm extends Component {
             if (this.formUuid) {
                 data['form_uuid'] = this.formUuid;
             }
+
+            self.showOverlay();
+
             $.jsonRpc.request(this.submitUrl, 'call', data).then(function(submission) {
                 if (typeof(submission) != 'undefined') {
                     // Set properties to instruct the next calls to save (draft) the current form.
                     this.formUuid = submission.form_uuid;
                     this.submitUrl = this.wizardSubmitUrl + this.formUuid + '/submit';
                 }
+                self.hideOverlay();
             });
         }
     }
@@ -100,6 +118,7 @@ export class OdooFormioForm extends Component {
                 configUrl += '?' + parentParams.toString();
             }
         }
+        self.showOverlay();
         $.jsonRpc.request(configUrl, 'call', {}).then(function(result) {
             if (!$.isEmptyObject(result)) {
                 self.schema = result.schema;
@@ -158,9 +177,41 @@ export class OdooFormioForm extends Component {
                         },
                         'form_data': form.data
                     };
-                    $.jsonRpc.request(apiUrl, 'call', {'data': data}).then(function(result) {
-                        form.submission = {'data': JSON.parse(result)};
-                    });
+
+                    const changeOverlay = component.properties.hasOwnProperty('changeOverlay')
+                          && component.properties.changeOverlay;
+
+                    if (changeOverlay) {
+                        // The overlayTimerPromise improves the UI/UX
+                        // feedback showing something (API) is processing.
+                        let overlayTimerPromise = new Promise((resolve) => {
+                            window.setTimeout(
+                                resolve, changeOverlay
+                            );
+                        });
+                        self.showOverlay();
+                        // Fix compatibility with jQuery Promises.
+                        //
+                        // TODO: when replaced $.ajax to native XHR, this
+                        // extra (return) Promise ain't needed.
+                        return new Promise((resolve) => {
+                            $.jsonRpc.request(apiUrl, 'call', {'data': data}).then(function(result) {
+                                form.submission = {'data': JSON.parse(result)};
+                                overlayTimerPromise.then(() => {
+                                    self.hideOverlay();
+                                    resolve();
+                                });
+                            });
+                        });
+                    }
+                    else {
+                        return new Promise((resolve) => {
+                            $.jsonRpc.request(apiUrl, 'call', {'data': data}).then(function(result) {
+                                form.submission = {'data': JSON.parse(result)};
+                                resolve();
+                            });
+                        });
+                    }
                 }
             }
         }
@@ -449,6 +500,7 @@ export class OdooFormioForm extends Component {
                     if (!$.isEmptyObject(result)) {
                         form.submission = {'data': JSON.parse(result)};
                     }
+                    self.hideOverlay();
                 });
             }
         });

@@ -1,5 +1,9 @@
 # Changelog
 
+## 15.0.6.19
+
+Add Form UI overlay, to block user interaction while loading and upon wizard state and submission.
+
 ## 15.0.6.18
 
 Improve the installation (`post_init_hook`) to auto install the latest stable formio.js (library) version from the GitHub tags API.
