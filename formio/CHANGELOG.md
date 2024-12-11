@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.0.6.0.10
+
+Possibility to override the form submit (input) value, by slurping from the input (DOM) element value.\
+This is especially useful for external JavaScript (scripts) that modify DOM input elements.
+
 ## 17.0.6.0.9
 
 Fix Form (action button) Send Invitation Mail, which is `formio.form` model method `action_send_invitation_mail`.
