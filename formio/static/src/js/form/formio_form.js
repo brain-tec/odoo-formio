@@ -527,6 +527,16 @@ export class OdooFormioForm extends Component {
             });
 
             form.on('submit', function(submission) {
+                form.everyComponent((component) => {
+                    let compObj = component.component;
+                    if (self.hasComponentPropertySlurpValue(compObj)) {
+                        if (component.refs.hasOwnProperty('input')) {
+                            const elementId = component.refs.input[0].id;
+                            const slurpVal = $("#" + elementId).val();
+                            submission.data[component.key] = slurpVal;
+                        }
+                    }
+                });
                 const data = {'data': submission.data};
                 self.postData(self.submitUrl, data).then(function(res) {
                     if (res.hasOwnProperty('error_message')) {
@@ -734,6 +744,13 @@ export class OdooFormioForm extends Component {
             && component.hasOwnProperty('data')
             && component.data.hasOwnProperty('url')
             && !$.isEmptyObject(component.data.url);
+    }
+
+    hasComponentPropertySlurpValue(component) {
+        return component
+            && component.hasOwnProperty('properties')
+            && component.properties.hasOwnProperty('slurpValue')
+            && !$.isEmptyObject(component.properties.slurpValue);
     }
 
     localizeComponent(component, language) {
