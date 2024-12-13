@@ -1,6 +1,12 @@
 # Changelog
 
+## 16.0.15.0.5
+
+Possibility to override the form submit (input) value, by slurping from the input (DOM) element value.\
+This is especially useful for external JavaScript (scripts) that modify DOM input elements.
+
 ## 16.0.15.0.4
+
 Form Builder improvements:
 - Field active
 - Add search filter: Archived
