@@ -1,5 +1,10 @@
 # Changelog
 
+## 15.0.6.20
+
+Ensure sufficient formio.js versions (GitHub tags) are downloaded and registered.\
+In future versions this will be more configurable.
+
 ## 15.0.6.19
 
 Add Form UI overlay, to block user interaction while loading and upon wizard state and submission.
