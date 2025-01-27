@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.0.6.0.11
+
+Ensure sufficient formio.js versions (GitHub tags) are downloaded and registered.\
+In future versions this will be more configurable.
+
 ## 17.0.6.0.10
 
 Possibility to override the form submit (input) value, by slurping from the input (DOM) element value.\
