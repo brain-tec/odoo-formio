@@ -21,7 +21,11 @@ class VersionGitHubChecker(models.TransientModel):
     def check_new_versions(self):
         res = []
         headers = {}
-        token = self.env['ir.config_parameter'].sudo().get_param('formio.github.personal.access.token')
+        Param = self.env['ir.config_parameter'].sudo()
+        # TODO
+        # github_tags_page_limit = Param.get_param('formio.github.tags.page_limit')
+        github_tags_page_limit = 10
+        token = Param.get_param('formio.github.personal.access.token')
         if token:
             headers = {"Authorization": token}
 
@@ -34,22 +38,21 @@ class VersionGitHubChecker(models.TransientModel):
         # https://developer.github.com/v3/repos/#list-repository-tags
         # - Results per page (max 100)
         # - Sorted by tag name (descending)
-        response = requests.get('https://api.github.com/repos/formio/formio.js/tags?per_page=100', headers=headers)
-
-        if response.status_code == 200:
-            tags = response.json()
-            Param = self.env['ir.config_parameter'].sudo()
-            versions_to_register = Param.get_param('formio.versions_to_register').split(',')
-            existing = self.env['formio.version.github.tag'].search([]).mapped('name')
-            for t in tags:
-                if (
-                    any([t['name'].startswith(v) for v in versions_to_register])
-                    and t['name'] not in existing
-                ):
-                    tag_vals = {
-                        'name': t['name'],
-                    }
-                    res.append(tag_vals)
+        for i in range(1, github_tags_page_limit):
+            response = requests.get(f'https://api.github.com/repos/formio/formio.js/tags?per_page=100&page={i}', headers=headers)
+            if response.status_code == 200:
+                tags = response.json()
+                versions_to_register = Param.get_param('formio.versions_to_register').split(',')
+                existing = self.env['formio.version.github.tag'].search([]).mapped('name')
+                for t in tags:
+                    if (
+                        any([t['name'].startswith(v) for v in versions_to_register])
+                        and t['name'] not in existing
+                    ):
+                        tag_vals = {
+                            'name': t['name'],
+                        }
+                        res.append(tag_vals)
         return res
 
     @api.model_create_multi
