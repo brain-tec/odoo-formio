@@ -3,7 +3,7 @@
 
 {
     'name': 'Forms',
-    'version': '15.0.16.18',
+    'version': '15.0.16.19',
     'summary': 'Form Builder for backend, portal, website and embedded forms, to collect any information you need for your business.',
     'license': 'LGPL-3',
     'author': 'Nova Code',
