@@ -6,6 +6,20 @@ See LICENSE file for full copyright and licensing details.
 <odoo>
     <template id="component">
         <t t-if="component.is_visible">
+            <!-- Page break -->
+            <t t-if="component.properties.get('reportPageBreakBefore')">
+                <t t-if="component.properties.get('reportPageBreakInside')">
+                    <div t-attf-style="page-break-before: {{ component.properties['reportPageBreakBefore'] }}; page-break-inside: {{ component.properties['reportPageBreakInside'] }};"/>
+                </t>
+                <t t-else="">
+                    <div t-attf-style="page-break-before: {{ component.properties['reportPageBreakBefore'] }};"/>
+                </t>
+            </t>
+            <t t-elif="component.properties.get('reportPageBreakInside')">
+                <div t-attf-style="page-break-inside: {{ component.properties['reportPageBreakInside'] }};"/>
+            </t>
+
+            <!-- Components -->
             <t t-if="component.type == 'textfield'">
                 <t t-call="formio_report_qweb.textfield_component"/>
             </t>
