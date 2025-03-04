@@ -44,9 +44,6 @@ class Form(models.Model):
             else:
                 attach_names += self._get_component_file_names(component)
         # update ir.attachment (link with formio.form)
-        import logging
-        _logger = logging.getLogger(__name__)
-        _logger.critical(attach_names)
         if attach_names:
             domain = [
                 ('name', 'in', attach_names),
@@ -67,7 +64,6 @@ class Form(models.Model):
         ]
         if attach_names:
             domain.append(('name', 'not in', attach_names))
-        _logger.critical(domain)
         self.env['ir.attachment'].sudo().search(domain).with_context(
             formio_storage_filestore_force_unlink_attachment=True
         ).unlink()
