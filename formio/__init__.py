@@ -10,7 +10,6 @@ from . import wizard
 
 import odoo
 from odoo import api, SUPERUSER_ID
-from functools import partial
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ def post_init_hook(env):
             )
             if version_github_tags:
                 version_github_tag = version_github_tags.sorted(
-                    key=lambda v: v.name.replace(version_prefix_dot, '')
+                    key=lambda v: v.name.replace(version_prefix_dot, '').replace('.', '')
                 )[-1]
                 version_github_tag.action_download_install()
                 Param.set_param('formio.default_version', version_github_tag.formio_version_id.name)
@@ -61,4 +60,3 @@ def uninstall_hook(env):
             env = api.Environment(cr, SUPERUSER_ID, {})
             env['ir.config_parameter'].search(
                 [('key', '=', 'formio.default_builder_js_options_id')]).unlink()
-    # cr.postcommit.add(partial(delete_config_parameter, cr.dbname))
