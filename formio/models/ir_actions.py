@@ -86,12 +86,15 @@ class ServerAction(models.Model):
                 ) % (rec.formio_ref)
                 raise ValidationError(msg)
 
+    @api.returns('self')
     def copy(self, default=None):
-        self.ensure_one()
-        if self.formio_ref:
-            default = dict(default or {})
-            default['formio_ref'] = str(uuid.uuid4())
-        return super().copy(default)
+        default = dict(default or {})
+        default["formio_ref"] = False
+        new_actions = super().copy(dict(default or {}))
+        for old_action, new_action in zip(self, new_action):
+            if old_action.formio_ref:
+                new_action.write({"formio_ref": str(uuid.uuid4())})
+        return new_actions
 
     def _get_eval_context(self, action=None):
         eval_context = super()._get_eval_context(action)

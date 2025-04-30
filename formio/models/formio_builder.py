@@ -331,15 +331,17 @@ class Builder(models.Model):
             if rec.public and not rec.public_access_rule_type:
                 raise ValidationError(_("The field 'Public Access Rule' Type is required for Public Forms!"))
 
-    @api.returns('self', lambda value: value.id)
+    @api.returns('self')
     def copy(self, default=None):
+        default = dict(default or {})
+        new_records = self.env[self._name]
         name_suffix = fields.Datetime.to_string(fields.Datetime.now())
         name_suffix = name_suffix.replace(' ', '_')
         name_suffix = name_suffix.replace(':', '-')
-
-        default = default or {}
-        default['name'] = '%s_%s' % (self.name, name_suffix)
-        return super(Builder, self).copy(default=default)
+        for old_rec in self:
+            default['name'] = '%s_%s' % (old_rec.name, name_suffix)
+            new_records |= super(Builder, old_rec).copy(default)
+        return new_records
 
     def _decode_schema(self, schema):
         """ Convert schema (str) to dictionary
