@@ -77,12 +77,15 @@ class IrAttachment(models.AbstractModel):
                 to_check = self - self.browse(asset_ids)
         super(IrAttachment, to_check).check(mode, values)
 
+    @api.returns('self')
     def copy(self, default=None):
-        self.ensure_one()
-        if self.formio_ref:
-            default = dict(default or {})
-            default['formio_ref'] = str(uuid.uuid4())
-        return super().copy(default)
+        default = dict(default or {})
+        default["formio_ref"] = False
+        new_records = super().copy(default)
+        for old_rec, new_rec in zip(self, new_records):
+            if old_rec.formio_ref:
+                new_rec.write({"formio_ref": str(uuid.uuid4())})
+        return new_records
 
     def _formio_ref_models(self):
         return ['formio.version.asset']

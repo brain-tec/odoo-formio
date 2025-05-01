@@ -1,5 +1,14 @@
 # Changelog
 
+## 18.0.1.3
+
+Fix (migration 18) `copy` method in models:
+- `formio.builder`
+- `ir_actions`
+- `ir_attachment`
+
+Since Odoo 18 the `copy` method applies on a multi record set.
+
 ## 18.0.1.2
 
 Ensure sufficient formio.js versions (GitHub tags) are downloaded and registered.\
