@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.0.1.4
+
+Change `formio.form` method `_generate_odoo_domain` to provide the `formio.form` record in args.
+
 ## 18.0.1.3
 
 Fix (migration 18) `copy` method in models:
