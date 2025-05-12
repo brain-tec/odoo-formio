@@ -1,5 +1,9 @@
 # Changelog
 
+## 17.0.6.0.12
+
+Change `formio.form` method `_generate_odoo_domain` to provide the `formio.form` record in args.
+
 ## 17.0.6.0.11
 
 Ensure sufficient formio.js versions (GitHub tags) are downloaded and registered.\
