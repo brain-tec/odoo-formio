@@ -34,7 +34,8 @@ class FormioStorageFilestoreController(http.Controller):
 
         # Avoid using sudo when not necessary: internal users can
         # create attachments, as opposed to public and portal users.
-        if not request.env.user.has_group('base.group_user'):
+        # The ir.http _authenticate method already checked before this endpoint.
+        if not request.env.user or not request.env.user.has_group('base.group_user'):
             IrAttachment = IrAttachment.sudo().with_context(binary_field_real_user=IrAttachment.env.user)
 
         uid = request.env.context.get('uid') or request.env.ref('base.public_user').id
