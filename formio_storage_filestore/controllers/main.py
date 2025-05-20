@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from werkzeug.exceptions import Forbidden
 
 from odoo import http, _
-from odoo.http import request
+from odoo.http import request, Response
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class FormioStorageFilestoreController(http.Controller):
         IrAttachment = request.env['ir.attachment']
         # Avoid using sudo when not necessary: internal users can
         # create attachments, as opposed to public and portal users.
-        if not request.env.user.has_group('base.group_user'):
+        if not request.env.user or not request.env.user.has_group('base.group_user'):
             IrAttachment = IrAttachment.sudo().with_context(binary_field_real_user=IrAttachment.env.user)
 
         # SECURITY RULE 1
@@ -166,7 +166,14 @@ class FormioStorageFilestoreController(http.Controller):
                 #
                 # stream = http.Stream.from_path(fontfile_path)
                 # return stream.get_response()
-                response = http.send_file(data, filename=attachment['name'], as_attachment=True)
+                response = http._send_file(
+                    data,
+                    request.httprequest.environ,
+                    download_name=attachment['name'],
+                    as_attachment=True,
+                    response_class=Response,
+                )
+
                 return response
         else:
             _logger.warning('File not found or something went wrong')
