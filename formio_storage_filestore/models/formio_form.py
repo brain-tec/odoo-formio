@@ -31,7 +31,7 @@ class Form(models.Model):
             ('res_id', 'in', self.ids)
         ]
         attachments = self.env['ir.attachment'].search(domain)
-        attachments.write({'formio_storage_filestore_user_id': False})
+        attachments.write({'formio_storage_filestore': False})
         return super(Form, self).unlink()
 
     def _process_storage_filestore_ir_attachments(self):
@@ -47,7 +47,7 @@ class Form(models.Model):
         if attach_names:
             domain = [
                 ('name', 'in', attach_names),
-                ('formio_storage_filestore_user_id', '!=', False)
+                ('formio_storage_filestore', '=', True)
             ]
             attachments = self.env['ir.attachment'].sudo().search(domain)
             for attach in attachments:
@@ -60,7 +60,7 @@ class Form(models.Model):
         domain = [
             ('res_model', '=', 'formio.form'),
             ('res_id', '=', self.id),
-            ('formio_storage_filestore_user_id', '!=', False)
+            ('formio_storage_filestore', '=', True)
         ]
         if attach_names:
             domain.append(('name', 'not in', attach_names))
