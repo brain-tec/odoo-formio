@@ -6,10 +6,10 @@ from odoo import api, SUPERUSER_ID
 
 def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
-    attach_names = []
     domain = [("state", "=", "COMPLETE")]
     forms = env["formio.form"].search(domain)
     for form in forms:
+        attach_names = []
         for key, component in form._formio.input_components.items():
             if component.type == 'datagrid':
                 for row in component.rows:
