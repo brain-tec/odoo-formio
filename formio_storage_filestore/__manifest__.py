@@ -4,7 +4,7 @@
 {
     'name': 'Forms • File Storage',
     'summary': 'Store uploaded files by URL in the filestore (attachments)',
-    'version': '1.2',
+    'version': '1.3',
     'license': 'LGPL-3',
     'author': 'Nova Code',
     'website': 'https://www.novaforms.app',
