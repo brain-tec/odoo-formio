@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.0.1.5
+
+Fixes for public form:
+- Fix response for public submission endpoint.
+- Fix `_generate_odoo_domain` method for public form.
+
 ## 18.0.1.4
 
 Change `formio.form` method `_generate_odoo_domain` to provide the `formio.form` record in args.
