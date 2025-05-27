@@ -791,5 +791,5 @@ class Builder(models.Model):
     def _etl_odoo_data(self, formio_form=None, params={}):
         return {}
 
-    def _generate_odoo_domain(self, domain=[], params={}):
+    def _generate_odoo_domain(self, domain=[], formio_form=None, params={}):
         return domain
