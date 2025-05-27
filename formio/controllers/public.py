@@ -92,13 +92,13 @@ class FormioPublicController(http.Controller):
         if form and form.submission_data:
             submission_data = {'submission': json.loads(form.submission_data)}
         else:
-            submission_data = {}
+            submission_data = {'submission': {}}
 
         # ETL Odoo data
         if form:
             try:
                 etl_odoo_data = form.sudo()._etl_odoo_data()
-                submission_data.update(etl_odoo_data)
+                submission_data['submission'].update(etl_odoo_data)
             except Exception as e:
                 formio_exception = FormioException(e, form=form)
                 error_message, error_traceback = formio_exception.render_exception_load()
