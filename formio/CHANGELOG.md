@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.0.1.6
+
+In the form builder:
+- Add configurable Model (fields) translations.\
+  Eg useful in select components with the URL Data Source and the getData API.
+- Improve info in Translations tab.
+
 ## 18.0.1.5
 
 Fixes for public form:

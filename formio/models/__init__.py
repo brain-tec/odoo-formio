@@ -4,6 +4,7 @@
 from . import formio_builder
 from . import formio_builder_js_options
 from . import formio_builder_translation
+from . import formio_builder_translation_model
 from . import formio_default_asset_css
 from . import formio_form
 from . import formio_license

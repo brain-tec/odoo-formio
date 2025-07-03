@@ -295,15 +295,33 @@ See LICENSE file for full licensing details. -->
                             <group>
                                 <field name="language_en_enable"/>
                             </group>
-                            <field name="translations" context="{'default_builder_id': id}">
-                                <list editable="bottom">
-                                    <field name="builder_id" column_invisible="True"/>
-                                    <field name="lang_id"/>
-                                    <field name="source_property" placeholder="A formio.js library translation property ..." optional="show"/>
-                                    <field name="source"/>
-                                    <field name="value"/>
-                                </list>
-                            </field>
+                            <group string="Custom Translations" name="custom">
+                                <div class="text-muted">
+                                    <i class="fa fa-info-circle" title="info"/> Translations for form components (labels, placeholders etc).<br/>
+                                    <i class="fa fa-info-circle" title="info"/> Custom translations take precedence over all other translations.
+                                </div>
+                                <field name="translations" nolabel="1" colspan="2" context="{'default_builder_id': id}">
+                                    <list editable="bottom">
+                                        <field name="builder_id" column_invisible="True"/>
+                                        <field name="lang_id"/>
+                                        <field name="source_property" placeholder="A formio.js library translation property ..." optional="show"/>
+                                        <field name="source"/>
+                                        <field name="value"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Model Translations" name="model">
+                                <div class="text-muted">
+                                    <i class="fa fa-info-circle" title="info"/> Register for which Language and Model the translations should be registered and used in the form.
+                                </div>
+                                <field name="translation_model_ids" nolabel="1" colspan="2" context="{'default_builder_id': id}">
+                                    <list editable="bottom">
+                                        <field name="builder_id" column_invisible="True"/>
+                                        <field name="lang_id"/>
+                                        <field name="model_id"/>
+                                    </list>
+                                </field>
+                            </group>
                             <group string="Languages &amp; Locales" name="languages_locales">
                                 <field name="languages" nolabel="1" colspan="2">
                                     <list editable="bottom">
@@ -316,7 +334,7 @@ See LICENSE file for full licensing details. -->
                                 </field>
                             </group>
                             <div class="text-muted">
-                                <i class="fa fa-info-circle" title="info"/> Translations of the <strong>formio.js version</strong> can be done via the General tab (click field: formio.js version)<br/>
+                                <i class="fa fa-info-circle" title="info"/> Translations of the <strong>formio.js version</strong> can be done via the General tab (click field: formio.js version).<br/>
                                 <i class="fa fa-info-circle" title="info"/> The button "Translations" has the same as in this list.
                             </div>
                         </page>
