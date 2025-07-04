@@ -756,12 +756,18 @@ class Builder(models.Model):
 
     def i18n_translations(self):
         i18n = {}
-        i18n = self._i18n_formiojs_translations(i18n)
-        i18n = self._i18n_model_translations(i18n)
-        i18n = self._i18n_custom_translations(i18n)
+        lang_en = self.env.ref('base.lang_en')
+        if lang_en in self.languages:
+            i18n[lang_en.formio_ietf_code] = {}
+            lang_en_ietf_code = lang_en.formio_ietf_code
+        else:
+            lang_en_ietf_code = None
+        i18n = self._i18n_formiojs_translations(i18n, lang_en_ietf_code)
+        i18n = self._i18n_model_translations(i18n, lang_en_ietf_code)
+        i18n = self._i18n_custom_translations(i18n, lang_en_ietf_code)
         return i18n
 
-    def _i18n_formiojs_translations(self, i18n={}):
+    def _i18n_formiojs_translations(self, i18n={}, lang_en_ietf_code=None):
         # formio.js translations
         for trans in self.formio_version_id.translation_ids:
             code = trans.lang_id.formio_ietf_code
@@ -771,7 +777,7 @@ class Builder(models.Model):
                 i18n[code][trans.source_property] = trans.value
         return i18n
 
-    def _i18n_model_translations(self, i18n={}):
+    def _i18n_model_translations(self, i18n={}, lang_en_ietf_code=None):
         # Model translations
         for tm in self.translation_model_ids:
             lang = tm.lang_id
@@ -785,11 +791,14 @@ class Builder(models.Model):
                 self.env.cr, tm.model_name, records.ids, field_names, lang.code
             )
             for line in t_reader:
-                if line[5]:
+                if line[4] and line[5]:
                     i18n[code][line[4]] = line[5]
+                    if lang_en_ietf_code in i18n and not i18n[lang_en_ietf_code].get(line[5]):
+                        # for i18n[lang_en] add reversed translations
+                        i18n[lang_en_ietf_code][line[5]] = line[4]
         return i18n
 
-    def _i18n_custom_translations(self, i18n={}):
+    def _i18n_custom_translations(self, i18n={}, lang_en_ietf_code=None):
         # Custom translations (labels etc).
         for trans in self.translations:
             code = trans.lang_id.formio_ietf_code
