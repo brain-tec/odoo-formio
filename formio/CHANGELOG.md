@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.0.1.7
+
+Improve the model (fields) translations with English/en_US (if enabled) reversed translations, in case en_US is not the primary language.
+
 ## 18.0.1.6
 
 In the form builder:
