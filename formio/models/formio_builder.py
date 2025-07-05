@@ -2,12 +2,15 @@
 # See LICENSE file for full licensing details.
 
 import json
+import logging
 import re
 import uuid
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.http import request
+
+from odoo.tools.translate import TranslationRecordReader
 
 from ..utils import get_field_selection_label, json_loads
 
@@ -241,6 +244,7 @@ class Builder(models.Model):
     translations = fields.One2many('formio.builder.translation', 'builder_id', string='Translations', copy=True)
     translations_count = fields.Integer(compute='_compute_count_fields')
     languages = fields.One2many('res.lang', compute='_compute_languages', string='Languages')
+    translation_model_ids = fields.One2many('formio.builder.translation.model', 'builder_id', string='Translate Models')
     allow_force_update_state_group_ids = fields.Many2many(
         'res.groups', string='Allow groups to force update State',
         help="User groups allowed to manually force an update of the Form state."
@@ -752,6 +756,18 @@ class Builder(models.Model):
 
     def i18n_translations(self):
         i18n = {}
+        lang_en = self.env.ref('base.lang_en')
+        if lang_en in self.languages:
+            i18n[lang_en.formio_ietf_code] = {}
+            lang_en_ietf_code = lang_en.formio_ietf_code
+        else:
+            lang_en_ietf_code = None
+        i18n = self._i18n_formiojs_translations(i18n, lang_en_ietf_code)
+        i18n = self._i18n_model_translations(i18n, lang_en_ietf_code)
+        i18n = self._i18n_custom_translations(i18n, lang_en_ietf_code)
+        return i18n
+
+    def _i18n_formiojs_translations(self, i18n={}, lang_en_ietf_code=None):
         # formio.js translations
         for trans in self.formio_version_id.translation_ids:
             code = trans.lang_id.formio_ietf_code
@@ -759,9 +775,31 @@ class Builder(models.Model):
                 i18n[code] = {trans.source_property: trans.value}
             else:
                 i18n[code][trans.source_property] = trans.value
-        # Form Builder translations (labels etc).
-        # These could override the former formio.js translations, but
-        # that's how the Javascript API works.
+        return i18n
+
+    def _i18n_model_translations(self, i18n={}, lang_en_ietf_code=None):
+        # Model translations
+        for tm in self.translation_model_ids:
+            lang = tm.lang_id
+            code = lang.formio_ietf_code
+            records = self.env[tm.model_name].search([])
+            field_names = None
+            code = lang.formio_ietf_code
+            if code not in i18n:
+                i18n[code] = {}
+            t_reader = TranslationRecordReader(
+                self.env.cr, tm.model_name, records.ids, field_names, lang.code
+            )
+            for line in t_reader:
+                if line[4] and line[5]:
+                    i18n[code][line[4]] = line[5]
+                    if lang_en_ietf_code in i18n and not i18n[lang_en_ietf_code].get(line[5]):
+                        # for i18n[lang_en] add reversed translations
+                        i18n[lang_en_ietf_code][line[5]] = line[4]
+        return i18n
+
+    def _i18n_custom_translations(self, i18n={}, lang_en_ietf_code=None):
+        # Custom translations (labels etc).
         for trans in self.translations:
             code = trans.lang_id.formio_ietf_code
             if code not in i18n:
