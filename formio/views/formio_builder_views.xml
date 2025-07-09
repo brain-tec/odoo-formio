@@ -109,7 +109,7 @@ See LICENSE file for full licensing details. -->
                                 class="oe_stat_button"
                                 groups="formio.group_formio_admin"
                                 icon="fa-language">
-                            <field string="Custom Translations" name="translations_count" widget="statinfo"/>
+                            <field string="Translations" name="translations_count" widget="statinfo"/>
                         </button>
                         <button name="action_view_server_actions"
                                 type="object"
@@ -295,10 +295,10 @@ See LICENSE file for full licensing details. -->
                             <group>
                                 <field name="language_en_enable"/>
                             </group>
-                            <group string="Custom Translations" name="custom">
+                            <group string="Translations" name="translations">
                                 <div class="text-muted" colspan="2">
                                     <i class="fa fa-info-circle" title="info"/> Translations for form components (labels, placeholders etc).<br/>
-                                    <i class="fa fa-info-circle" title="info"/> Custom translations take precedence over all other translations.
+                                    <i class="fa fa-info-circle" title="info"/> These translations take precedence over all other translations (formio.js translations, model translations).
                                 </div>
                                 <field name="translations" context="{'default_builder_id': id}" nolabel="1" colspan="2">
                                     <tree editable="bottom">
@@ -310,7 +310,7 @@ See LICENSE file for full licensing details. -->
                                     </tree>
                                 </field>
                             </group>
-                            <group string="Model Translations" name="model">
+                            <group string="Model Translations" name="model_translations">
                                 <div class="text-muted" colspan="2">
                                     <i class="fa fa-info-circle" title="info"/> Register for which Language and Model the translations should be registered and used in the form.
                                 </div>
