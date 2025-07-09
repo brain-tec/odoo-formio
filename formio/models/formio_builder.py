@@ -434,6 +434,7 @@ class Builder(models.Model):
     def _compute_languages(self):
         for r in self:
             languages = r.translations.mapped('lang_id')
+            languages |= r.translation_model_ids.mapped('lang_id')
             lang_en = self.env.ref('base.lang_en')
             if lang_en.active and r.language_en_enable and 'en_US' not in languages.mapped('code'):
                 languages |= lang_en
