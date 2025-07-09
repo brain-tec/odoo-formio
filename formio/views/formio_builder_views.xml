@@ -109,7 +109,7 @@ See LICENSE file for full licensing details. -->
                                 class="oe_stat_button"
                                 groups="formio.group_formio_admin"
                                 icon="fa-language">
-                            <field string="Translations" name="translations_count" widget="statinfo"/>
+                            <field string="Custom Translations" name="translations_count" widget="statinfo"/>
                         </button>
                         <button name="action_view_server_actions"
                                 type="object"
