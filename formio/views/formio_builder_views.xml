@@ -295,10 +295,10 @@ See LICENSE file for full licensing details. -->
                             <group>
                                 <field name="language_en_enable"/>
                             </group>
-                            <group string="Custom Translations" name="custom">
+                            <group string="Translations" name="translations">
                                 <div class="text-muted">
                                     <i class="fa fa-info-circle" title="info"/> Translations for form components (labels, placeholders etc).<br/>
-                                    <i class="fa fa-info-circle" title="info"/> Custom translations take precedence over all other translations.
+                                    <i class="fa fa-info-circle" title="info"/> These translations take precedence over all other translations (formio.js translations, model translations).
                                 </div>
                                 <field name="translations" nolabel="1" colspan="2" context="{'default_builder_id': id}">
                                     <list editable="bottom">
