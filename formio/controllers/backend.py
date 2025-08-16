@@ -206,6 +206,7 @@ class FormioController(http.Controller):
             if request.session.debug and request.env.user.has_group('base.group_user'):
                 res['error_traceback'] = error_traceback
             form.write({'state': 'ERROR'})
+        request.session['formio_last_form_uuid'] = uuid
         return request.make_json_response(res)
 
     #########

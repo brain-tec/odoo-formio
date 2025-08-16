@@ -192,9 +192,13 @@ class FormioCustomerPortal(CustomerPortal):
 
         return request.redirect(redirect_url)
 
-    ######################
+    #####################################################################
     # Form - portal - uuid
-    ######################
+    # These routes (endpoints) are implemented in the backend controller:
+    # - /formio/form/<string:uuid>/config
+    # - /formio/form/<string:uuid>/submission
+    # - /formio/form/<string:uuid>/submit
+    #####################################################################
 
     @http.route('/formio/portal/form/<string:uuid>', type='http', auth='user', website=True)
     def portal_form_root(self, uuid):
