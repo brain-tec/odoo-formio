@@ -2,8 +2,8 @@
 # See LICENSE file for full licensing details.
 
 {
-    'name': 'Forms • Partner',
-    'summary': 'Forms integration with Partners e.g. contacts, clients, customers, suppliers',
+    'name': 'Forms • Contacts',
+    'summary': 'Forms integration with Contacts e.g. clients, customers, suppliers',
     'version': '0.1',
     'license': 'LGPL-3',
     'author': 'Nova Code',
