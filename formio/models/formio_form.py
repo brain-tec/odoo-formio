@@ -71,7 +71,8 @@ class Form(models.Model):
     kanban_group_state = fields.Selection(
         [('A', 'Pending'), ('B', 'Draft'), ('C', 'Completed'), ('D', 'Canceled')],
         compute='_compute_kanban_group_state', store=True)
-    url = fields.Char(compute='_compute_url', readonly=True)
+    url = fields.Char(string='Backend URL', compute='_compute_url', readonly=True)
+    portal_url = fields.Char(string='Portal URL', compute='_compute_url', readonly=True)
     act_window_url = fields.Char(compute='_compute_act_window_url', readonly=True)
     partner_id = fields.Many2one('res.partner', string='Partner', tracking=True)
     initial_res_model_id = fields.Many2one(related='builder_id.res_model_id', readonly=True, string='Resource Model #1')
@@ -501,11 +502,16 @@ class Form(models.Model):
 
     def _compute_url(self):
         # sudo() is needed for regular users.
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         for r in self:
-            url = '{base_url}/formio/form/{uuid}'.format(
-                base_url=r.env['ir.config_parameter'].sudo().get_param('web.base.url'),
-                uuid=r.uuid)
-            r.url = url
+            r.url = '{base_url}/formio/form/{uuid}'.format(
+                base_url=base_url,
+                uuid=r.uuid
+            )
+            r.portal_url = '{base_url}/my/formio/form/{uuid}'.format(
+                base_url=base_url,
+                uuid=r.uuid
+            )
 
     def _compute_act_window_url(self):
         # sudo() is needed for regular users.
