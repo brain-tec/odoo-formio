@@ -243,6 +243,12 @@ See LICENSE file for full licensing details. -->
                                 </group>
                             </group>
                         </page>
+                        <page string="URLs" name="urls">
+                            <group>
+                                <field name="url" widget="CopyClipboardChar"/>
+                                <field name="portal_url" widget="CopyClipboardChar"/>
+                            </group>
+                        </page>
                         <page string="Submission Data" name="data" groups="formio.group_formio_admin">
                             <field name="submission_data" readonly="readonly_submission_data == True"/>
                             <field name="readonly_submission_data" invisible="1"/>
