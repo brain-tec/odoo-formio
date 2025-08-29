@@ -230,6 +230,7 @@ See LICENSE file for full licensing details. -->
                                     <field name="public_access" groups="formio.group_formio_admin"/>
                                 </group>
                                 <group name="actions_settings" string="Actions">
+                                    <field name="portal_allow_cancel" invisible="not portal"/>
                                     <field name="allow_copy"/>
                                     <field name="copy_to_current"
                                            invisible="allow_copy == False"/>

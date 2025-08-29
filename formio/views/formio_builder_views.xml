@@ -368,6 +368,7 @@ See LICENSE file for full licensing details. -->
                             <group name="actions_settings" string="Actions">
                                 <field name="form_allow_copy" groups="formio.group_formio_admin" />
                                 <field name="form_copy_to_current" groups="formio.group_formio_admin" invisible="form_allow_copy == False"/>
+                                <field name="portal_allow_cancel" groups="formio.group_formio_admin" invisible="not portal"/>
                             </group>
                         </page>
                         <page string="Components API" name="formio_components_api">

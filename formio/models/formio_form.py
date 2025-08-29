@@ -111,6 +111,11 @@ class Form(models.Model):
     submission_timezone = fields.Selection(_tz_get, string='Submission Timezone')
     sequence = fields.Integer(help="Usefull when storing and listing forms in an ordered way")
     portal = fields.Boolean("Portal (Builder)", related='builder_id.portal', readonly=True, help="Form is accessible by assigned portal user")
+    portal_allow_cancel = fields.Boolean(
+        string="Portal Allow Cancel",
+        related="builder_id.portal_allow_cancel",
+        help="Allow cancelling form in the portal.",
+    )
     portal_share = fields.Boolean("Portal")
     portal_save_draft_done_url = fields.Char(related='builder_id.portal_save_draft_done_url')
     portal_submit_done_url = fields.Char(related='builder_id.portal_submit_done_url')
@@ -284,6 +289,8 @@ class Form(models.Model):
             if self.env.su:
                 form.allow_unlink = True
             else:
+                #sudo = self.env.user.has_group('base.group_group_user')
+                # unlink_form = self.get_form(form.uuid, 'unlink', sudo=sudo)
                 unlink_form = self.get_form(form.uuid, 'unlink')
                 if unlink_form or self.env.su:
                     form.allow_unlink = True
@@ -399,6 +406,8 @@ class Form(models.Model):
         self.write({'state': STATE_COMPLETE})
 
     def action_cancel(self):
+        if not self.allow_cancel:
+            raise UserError(_("You're not allowed to update the Form into Cancel state."))
         if not self.allow_force_update_state:
             raise UserError(_("You're not allowed to (force) update the Form into Cancel state."))
         self.write({'state': STATE_CANCEL})
@@ -532,10 +541,13 @@ class Form(models.Model):
         }
 
     @api.model
-    def get_form(self, uuid, mode):
+    def get_form(self, uuid, mode, sudo=False):
         """ Verifies access to form and return form or False. """
 
-        form = self.sudo().search([('uuid', '=', uuid)], limit=1)
+        if sudo:
+            form = self.sudo().search([('uuid', '=', uuid)], limit=1)
+        else:
+            form = self.search([('uuid', '=', uuid)], limit=1)
         if form:
             try:
                 # Catch the deny access exception
