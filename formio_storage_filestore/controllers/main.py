@@ -72,7 +72,7 @@ class FormioStorageFilestoreController(http.Controller):
         if file_name:
             domain = [
                 ('name', '=', file_name),
-                ('formio_storage_filestore', '!=', True)
+                ('formio_storage_filestore', '=', True)
             ]
             attachment = IrAttachment.search(domain)
             if not attachment:

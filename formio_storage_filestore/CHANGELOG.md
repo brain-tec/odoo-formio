@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.0.1.4
+
+Fix GET endpoint method `storage_filestore_get`.
+
 ## 18.0.1.3
 
 Fix (migration v18) `ir.attachment` creation and linking.\
