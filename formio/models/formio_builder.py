@@ -116,6 +116,7 @@ class Builder(models.Model):
         help='Allows to use this Form Builder in state Obsolete, when adding/choosing a new Form in the backend.'
     )
     portal = fields.Boolean("Portal", tracking=True, help="Form is accessible by assigned portal user")
+    portal_allow_cancel = fields.Boolean(string='Portal Allow Cancel', help='Allow cancelling form in the portal.', tracking=True, default=False)
     portal_url = fields.Char(string='Portal URL', compute='_compute_portal_urls')
     portal_submission_url_add_query_params_from = fields.Selection(
         string="Portal Add Query Params to Submission URL from",

@@ -97,7 +97,7 @@ class FormioStorageFilestoreController(http.Controller):
                             msg = 'The (once) public Form %s has been expired.'
                             _logger.info(msg % form.uuid)
                             raise Forbidden(_(msg) % form.uuid)
-                    elif not Form.get_form(form.uuid, 'read'):
+                    elif not Form.get_form(form.uuid, 'read', sudo=True):
                         msg = 'Forbidden Form %s'
                         _logger.info(msg % form.uuid)
                         raise Forbidden(_(msg) % form.uuid)
@@ -108,7 +108,7 @@ class FormioStorageFilestoreController(http.Controller):
                     url = urlparse(base_url)
                     if url.path.startswith('/formio/form') and not is_user_public:
                         uuid = url.path.split('/')[-1]
-                        if not Form.get_form(uuid, 'read'):
+                        if not Form.get_form(uuid, 'read', sudo=True):
                             msg = 'Forbidden Form /formio/form/%s'
                             _logger.info(msg % uuid)
                             raise Forbidden(_(msg) % uuid)
@@ -122,7 +122,7 @@ class FormioStorageFilestoreController(http.Controller):
                             raise Forbidden(_(msg) % uuid)
                     elif url.path.startswith('/formio/portal/form') and not is_user_public:
                         uuid = url.path.split('/')[-1]
-                        if not Form.get_form(uuid, 'read'):
+                        if not Form.get_form(uuid, 'read', sudo=True):
                             msg = 'Forbidden Form /formio/portal/form/%s'
                             _logger.info(msg % uuid)
                             raise Forbidden(_(msg) % uuid)

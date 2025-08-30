@@ -1,5 +1,15 @@
 # Changelog
 
+## 18.0.1.9
+
+Major and important change in access rights of the `formio.form` method `get_form`.
+From now this method will not `sudo` by default, to be able to check access rights.
+The `get_form` now accepts the `sudo` argument (default `False`) to enfore `sudo` if needed.
+
+Improvements to the portal:
+- Improve form access rights for portal user.
+- Allow/disallow to cancel a form in the portal, by a setting in the form builder.
+
 ## 18.0.1.8
 
 Add URLs (tab) in `formio.form` form view.
