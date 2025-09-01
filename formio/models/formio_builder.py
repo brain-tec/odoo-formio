@@ -743,13 +743,18 @@ class Builder(models.Model):
 
     @api.model
     def get_builder_by_name(self, name, state=STATE_CURRENT):
-        """ Get the latest version of a builder by name. """
+        return self.get_latest_builder_by_name(name, state=state)
+
+    @api.model
+    def get_latest_builder_by_name(self, name, state=None):
+        """ Get the latest version of a builder by name and state. """
 
         domain = [
             ('name', '=', name),
-            ('state', '=', state)
         ]
-        builder = self.sudo().search(domain, limit=1)
+        if state:
+            domain.append(('state', '=', state))
+        builder = self.sudo().search(domain, order='version DESC', limit=1)
         return builder or False
 
     def _cdn_base_url(self):
