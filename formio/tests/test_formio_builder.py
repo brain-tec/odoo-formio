@@ -5,10 +5,12 @@ from odoo.tests.common import TransactionCase
 
 
 class TestFormioBuilder(TransactionCase):
-    def setUp(self):
-        super().setUp()
-        self.FormioBuilder = self.env['formio.builder']
-        self.formio_version_dummy = self.env.ref('formio.version_dummy')
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.FormioBuilder = cls.env['formio.builder']
+        cls.formio_version_dummy = cls.env.ref('formio.version_dummy')
 
     def test_create_builder(self):
         builder = self.FormioBuilder.create({
