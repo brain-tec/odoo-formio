@@ -406,8 +406,6 @@ class Form(models.Model):
         self.write({'state': STATE_COMPLETE})
 
     def action_cancel(self):
-        if not self.allow_cancel:
-            raise UserError(_("You're not allowed to update the Form into Cancel state."))
         if not self.allow_force_update_state:
             raise UserError(_("You're not allowed to (force) update the Form into Cancel state."))
         self.write({'state': STATE_CANCEL})
@@ -423,7 +421,8 @@ class Form(models.Model):
         if not builder:
             raise UserError(_("There is no Form Builder available to link this form to."))
 
-        return self.copy(default={'state': STATE_DRAFT, 'builder_id': builder.id})
+        # For sure, explicitely pending state
+        return self.copy(default={'state': STATE_PENDING, 'builder_id': builder.id})
 
     def action_copy_to_current(self):
         new_form = self.action_copy(force_copy_to_current=True)
