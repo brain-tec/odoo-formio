@@ -27,6 +27,11 @@ class BuilderTranslationModel(models.Model):
     builder_version = fields.Integer(related='builder_id.version', string='Builder Version', store=True)
     lang_name = fields.Char(related='lang_id.name', string='Language Name', store=True)
 
+    @api.depends('builder_id', 'lang_id', 'model_id')
+    def _compute_display_name(self):
+        for r in self:
+            r.display_name = _('%(lang)s: %(model)s', lang=r.lang_id.name, model=r.model_id.name)
+
     @api.constrains('builder_id', 'lang_id', 'model_id')
     def _constraint_unique(self):
         errors = []
@@ -45,9 +50,3 @@ class BuilderTranslationModel(models.Model):
         if errors:
             msg = _('Form Builder Translation Models must be unique.\n\n%s') % '\n\n'.join(errors)
             raise ValidationError(msg)
-
-    def _compute_display_name(self):
-        for r in self:
-            r.display_name = '{lang}: {model}'.format(
-                lang=r.lang_id, model=r.model_name
-            )

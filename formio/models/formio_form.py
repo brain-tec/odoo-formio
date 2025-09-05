@@ -289,15 +289,13 @@ class Form(models.Model):
             if self.env.su:
                 form.allow_unlink = True
             else:
-                #sudo = self.env.user.has_group('base.group_group_user')
-                # unlink_form = self.get_form(form.uuid, 'unlink', sudo=sudo)
                 unlink_form = self.get_form(form.uuid, 'unlink')
                 if unlink_form or self.env.su:
                     form.allow_unlink = True
                 else:
                     form.allow_unlink = False
 
-            # allow_state_update
+            # allow_force_update_state
             if self.env.su:
                 form.allow_force_update_state = True
             elif self.env.user.has_group('formio.group_formio_admin'):
