@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.0.1.10
+
+Fix ValueError (singleton: res.users) in model `formio.form` method `_onchange_portal` (which should be reimplemented / migrated).
+
 ## 18.0.1.9
 
 Major and important change in access rights of the `formio.form` method `get_form`.
