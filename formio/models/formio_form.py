@@ -487,7 +487,7 @@ class Form(models.Model):
         group_formio_user = self.env.ref('formio.group_formio_user').id
         group_formio_user_all = self.env.ref('formio.group_formio_user_all_forms').id
         if not self.portal:
-            if self.user_id.has_group('base.group_portal'):
+            if self.user_id and self.user_id.has_group('base.group_portal'):
                 self.user_id = False
             res['domain'] = {
                 'user_id': [
